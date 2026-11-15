@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f8a5f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>초기우수시설 위치 찾기 · GRS80 좌표</title>
+<style>
+  :root{
+    --bg:#eef1f5; --card:#ffffff; --ink:#12181f; --muted:#6b7684; --line:#e2e7ee;
+    --accent:#0f8a5f; --accent-dark:#0b6b4a; --accent-soft:#eaf6f0;
+    --warn:#a3570a; --warn-bg:#fff6e9; --warn-line:#f3dfc2;
+    --danger:#c0392b; --danger-soft:#fdeeeb;
+    --radius:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink); line-height:1.5;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Helvetica Neue",system-ui,sans-serif;
+    -webkit-text-size-adjust:100%;
+  }
+  .app{max-width:560px; margin:0 auto; padding:16px 14px calc(30px + env(safe-area-inset-bottom));}
+
+  /* ---------- header ---------- */
+  .head{margin:2px 4px 14px;}
+  .brand{display:flex; align-items:center; gap:7px; color:var(--accent); font-size:12.5px; font-weight:800; letter-spacing:.02em;}
+  .brand svg{display:block;}
+  h1{font-size:22px; line-height:1.28; margin:6px 0 5px; letter-spacing:-.025em;}
+  .sub{margin:0; font-size:13.5px; color:var(--muted);}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--card); border-radius:var(--radius); padding:15px;
+    margin:0 0 12px; box-shadow:0 1px 2px rgba(18,24,31,.06), 0 8px 22px rgba(18,24,31,.05);
+  }
+  .cardTitle{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
+  .cardTitle h2{font-size:15px; margin:0; letter-spacing:-.01em;}
+  .count{font-size:12.5px; color:var(--muted); font-weight:700;}
+  .hidden{display:none !important;}
+
+  .lbl{display:block; font-size:12.5px; font-weight:800; color:#39434e; margin:0 0 5px;}
+  .hint{font-size:12px; color:var(--muted); margin:7px 0 0; line-height:1.45;}
+  .hint b{color:#39434e; font-weight:700;}
+
+  select,input[type=text]{
+    width:100%; padding:13px 12px; font-size:16px; color:var(--ink);
+    background:#fbfcfd; border:1px solid var(--line); border-radius:12px; font-family:inherit;
+    appearance:none; -webkit-appearance:none;
+  }
+  select{
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%236b7684' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; padding-right:38px;
+  }
+  select:focus,input[type=text]:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(15,138,95,.14); background:#fff;}
+
+  button{font-family:inherit; cursor:pointer;}
+  .primary{
+    display:block; width:100%; padding:16px; font-size:16.5px; font-weight:800; letter-spacing:-.01em;
+    color:#fff; background:linear-gradient(180deg,#12996a,#0d7d55); border:0; border-radius:14px;
+    box-shadow:0 8px 18px rgba(15,138,95,.24);
+  }
+  .primary:active{transform:translateY(1px); box-shadow:0 4px 10px rgba(15,138,95,.22);}
+  .ghost{
+    padding:11px 13px; font-size:13.5px; font-weight:700; color:#39434e; background:#f2f5f8;
+    border:1px solid var(--line); border-radius:12px;
+  }
+  .ghost:active{background:#e8edf2;}
+  .ghost.accent{color:var(--accent-dark); background:var(--accent-soft); border-color:#cfe9dd;}
+  .linkBtn{background:none; border:0; padding:6px 2px; font-size:12.5px; font-weight:700; color:var(--muted);}
+  .linkBtn.danger{color:var(--danger);}
+
+  /* ---------- gps ---------- */
+  .gpsCard{padding:13px 15px;}
+  .gpsTop{display:flex; align-items:center; gap:8px;}
+  .dot{width:9px; height:9px; border-radius:50%; background:#c3cad3; flex:0 0 auto; transition:background .2s;}
+  .dot.on{background:#12a06a; box-shadow:0 0 0 4px rgba(18,160,106,.16); animation:pulse 2s infinite;}
+  .dot.err{background:#e05a4a;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(18,160,106,.18);}50%{box-shadow:0 0 0 6px rgba(18,160,106,.06);}}
+  .gpsTitle{font-size:13.5px; font-weight:800;}
+  .gpsAcc{margin-left:auto; font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .gpsMsg{font-size:12.5px; color:var(--muted); margin:6px 0 0; line-height:1.45;}
+  .gpsMsg.err{color:#a4321f;}
+  .gpsRow{display:flex; gap:6px; margin-top:9px;}
+  .gpsRow .ghost{flex:1 1 0; text-align:center; padding:10px 8px; font-size:12.5px;}
+  .gpsCoord{font-size:11.5px; color:#8d97a2; margin-top:7px; font-variant-numeric:tabular-nums;}
+
+  /* ---------- selected facility ---------- */
+  .badges{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;}
+  .badge{font-size:11.5px; font-weight:800; letter-spacing:.01em; color:var(--accent-dark); background:var(--accent-soft); border:1px solid #cfe9dd; border-radius:999px; padding:4px 9px;}
+  .badge.sub{color:#4b5663; background:#f2f5f8; border-color:var(--line);}
+  .badge.warnb{color:var(--warn); background:var(--warn-bg); border-color:var(--warn-line);}
+  .facName{font-size:19px; font-weight:800; margin:0; letter-spacing:-.02em; word-break:break-all;}
+  .facMemo{font-size:13px; color:var(--muted); margin:3px 0 0;}
+
+  .distBox{
+    display:flex; align-items:center; gap:14px; margin:13px 0 0; padding:13px;
+    background:linear-gradient(180deg,#f7fbf9,#f0f8f4); border:1px solid #dbeee5; border-radius:14px;
+  }
+  .arrowWrap{
+    width:52px; height:52px; flex:0 0 auto; border-radius:50%; background:#fff;
+    border:1px solid #dbeee5; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 6px rgba(15,138,95,.08);
+  }
+  .arrow{font-size:26px; line-height:1; color:var(--accent); transition:transform .25s ease; transform-origin:50% 50%;}
+  .distMain{font-size:26px; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; line-height:1.15;}
+  .distDir{font-size:13.5px; font-weight:700; color:var(--accent-dark); margin-top:1px;}
+  .distSub{font-size:11.5px; color:var(--muted); margin-top:3px; font-variant-numeric:tabular-nums;}
+  .distBox.off{background:#f7f9fb; border-color:var(--line); align-items:flex-start;}
+  .distBox.off .arrow{color:#b6bfc9; font-size:20px; margin-top:3px;}
+  .distBox.off .distMain{font-size:14.5px; font-weight:700; letter-spacing:0;}
+
+  .coordRows{margin-top:12px; padding-top:11px; border-top:1px solid var(--line);}
+  .coordRow{display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:2px 0;}
+  .coordRow .k{font-size:12.5px; font-weight:700; color:var(--muted); flex:0 0 auto;}
+  .coordRow .v{font-size:19px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; text-align:right; word-break:break-all;}
+  .dms{font-size:11.5px; color:var(--muted); margin-top:4px; font-variant-numeric:tabular-nums;}
+  .meta{font-size:12px; color:#4b5663; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line); font-variant-numeric:tabular-nums;}
+  .meta div{margin:2px 0;}
+
+  .actions4{display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:13px;}
+  .mapBtn{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    padding:12px 6px; font-size:14px; font-weight:800; border-radius:13px; text-decoration:none;
+    letter-spacing:-.01em; line-height:1.25; border:0;
+  }
+  .mapBtn small{font-size:10.5px; font-weight:700; opacity:.72; letter-spacing:0; margin-top:1px;}
+  .mapBtn.kakao{background:#fee500; color:#1a1700; box-shadow:0 6px 14px rgba(254,229,0,.3);}
+  .mapBtn.naver{background:#03c75a; color:#fff; box-shadow:0 6px 14px rgba(3,199,90,.26);}
+  .mapBtn:active{transform:translateY(1px);}
+  .rowBtns{display:flex; gap:7px; margin-top:8px;}
+  .rowBtns .ghost{flex:1 1 0; text-align:center; font-size:12.5px; padding:10px 6px;}
+
+  details.alt{margin-top:11px; border-top:1px solid var(--line); padding-top:9px;}
+  details.alt summary{font-size:12.5px; font-weight:700; color:#4b5663; cursor:pointer; list-style:none;}
+  details.alt summary::-webkit-details-marker{display:none;}
+  details.alt summary::before{content:"▸ "; color:var(--muted);}
+  details.alt[open] summary::before{content:"▾ ";}
+  .altList{margin-top:7px; font-size:12px; color:#4b5663;}
+  .altList div{padding:3px 0; border-bottom:1px dotted var(--line); font-variant-numeric:tabular-nums;}
+  .altList div:last-child{border-bottom:0;}
+  .altList span.c{display:inline-block; min-width:74px; font-weight:700; color:#39434e;}
+
+  /* ---------- facility list ---------- */
+  .listTools{display:flex; gap:6px; margin-bottom:4px; flex-wrap:wrap;}
+  .listTools .ghost{font-size:12px; padding:8px 10px;}
+  .histList{list-style:none; margin:0; padding:0;}
+  .item{display:flex; align-items:stretch; gap:4px; border-bottom:1px solid var(--line);}
+  .item:last-child{border-bottom:0;}
+  .itemMain{flex:1 1 auto; min-width:0; text-align:left; background:none; border:0; padding:11px 2px;}
+  .itemMain:active{background:#f7f9fb;}
+  .itemTop{display:flex; align-items:baseline; gap:7px;}
+  .itemName{font-size:14.5px; font-weight:800; letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .itemDist{margin-left:auto; font-size:12.5px; font-weight:800; color:var(--accent-dark); flex:0 0 auto; font-variant-numeric:tabular-nums;}
+  .itemSub{font-size:11.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .itemBtn{flex:0 0 auto; width:38px; background:none; border:0; color:#a9b2bc; font-size:14px;}
+  .itemBtn.del:active{color:var(--danger);}
+  .itemBtn.edit:active{color:var(--accent-dark);}
+  .item.selected{background:#f6fbf8;}
+  .item.selected .itemName{color:var(--accent-dark);}
+
+  .editForm{padding:10px 2px; display:grid; gap:6px; width:100%;}
+  .editForm .row{display:flex; gap:6px;}
+  .editForm input{font-size:14px; padding:10px;}
+  .editForm .row .ghost{flex:1 1 0; font-size:12.5px; padding:10px 6px;}
+
+  .emptyBox{font-size:12.5px; color:var(--muted); padding:6px 2px 2px; line-height:1.5;}
+  .emptyBig{text-align:center; padding:10px 4px 6px;}
+  .emptyBig strong{display:block; font-size:15px; margin-bottom:4px;}
+  .emptyBig p{margin:0; font-size:12.5px; color:var(--muted);}
+
+  .importBtnWrap{position:relative; overflow:hidden; display:inline-flex;}
+  .importBtnWrap input[type=file]{position:absolute; inset:0; opacity:0; font-size:100px; cursor:pointer;}
+
+  /* ---------- input form ---------- */
+  details#addCard{background:var(--card); border-radius:var(--radius); margin:0 0 12px; box-shadow:0 1px 2px rgba(18,24,31,.06), 0 8px 22px rgba(18,24,31,.05); overflow:hidden;}
+  details#addCard > summary{
+    list-style:none; cursor:pointer; padding:15px; font-size:14.5px; font-weight:800; letter-spacing:-.01em;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  details#addCard > summary::-webkit-details-marker{display:none;}
+  details#addCard > summary::after{content:"＋"; font-size:17px; color:var(--accent); font-weight:700;}
+  details#addCard[open] > summary::after{content:"－";}
+  details#addCard > summary .st{font-size:12px; font-weight:700; color:var(--muted); margin-left:auto; margin-right:6px;}
+  .addBody{padding:0 15px 15px;}
+
+  .pasteRow{display:flex; gap:7px; margin:12px 0 3px;}
+  .pasteRow input{flex:1 1 auto; min-width:0; font-size:14px; padding:11px;}
+  .mini{flex:0 0 auto; padding:0 14px; font-size:13px; font-weight:800; color:var(--accent-dark); background:var(--accent-soft); border:1px solid #cfe9dd; border-radius:12px;}
+
+  .fields{display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-top:12px;}
+  .field{min-width:0;}
+  .field label{display:block; font-size:12px; font-weight:800; color:#39434e; margin:0 0 4px;}
+  .field label em{font-style:normal; font-weight:600; color:var(--muted);}
+  .field input{font-variant-numeric:tabular-nums; font-size:15px; padding:12px 9px;}
+  @media (max-width:400px){
+    .fields{grid-template-columns:1fr 1fr;}
+    .field.z{grid-column:1 / -1;}
+  }
+  .swapRow{display:flex; align-items:center; gap:9px; margin:10px 0 0; flex-wrap:wrap;}
+  .swapState{font-size:12px; color:var(--muted);}
+  .swapState.on{color:var(--accent-dark); font-weight:800;}
+
+  .nameRow{margin-top:14px; padding-top:13px; border-top:1px dashed var(--line); display:grid; gap:7px;}
+  .nameRow .two{display:grid; grid-template-columns:1fr 1fr; gap:7px;}
+
+  .err,.warn{margin:11px 0 0; padding:10px 12px; font-size:12.5px; border-radius:11px; line-height:1.45;}
+  .err{color:#8c2b1e; background:var(--danger-soft); border:1px solid #f7d4cd;}
+  .warn{color:var(--warn); background:var(--warn-bg); border:1px solid var(--warn-line);}
+
+  footer{font-size:11px; color:#8d97a2; text-align:center; line-height:1.6; margin-top:8px;}
+  footer b{color:#6b7684;}
+
+  /* ---------- share ---------- */
+  .secLabel{font-size:11.5px; font-weight:800; color:var(--muted); margin:14px 0 6px; letter-spacing:.02em;}
+  .shareGrid{display:grid; grid-template-columns:1fr 1fr; gap:7px;}
+  .shareGrid .ghost{text-align:center; font-size:12.5px; padding:11px 6px;}
+  .shareGrid .wide{grid-column:1 / -1;}
+  .itemBtn.share{font-size:15px; color:#74808d;}
+  .itemBtn.share:active{color:var(--accent-dark);}
+
+  .sheetWrap{position:fixed; inset:0; z-index:70; display:flex; align-items:flex-end; justify-content:center;}
+  .sheetBackdrop{position:absolute; inset:0; background:rgba(12,18,24,.44);}
+  .sheet{
+    position:relative; width:100%; max-width:560px; background:#fff; border-radius:18px 18px 0 0;
+    padding:15px 15px calc(16px + env(safe-area-inset-bottom)); box-shadow:0 -10px 34px rgba(0,0,0,.2);
+    animation:sheetUp .18s ease-out;
+  }
+  @keyframes sheetUp{from{transform:translateY(16px); opacity:.5;} to{transform:none; opacity:1;}}
+  .sheetHead{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:11px;}
+  .sheetHead strong{font-size:14.5px; letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .sheetHead button{background:none; border:0; font-size:13px; font-weight:800; color:var(--muted); padding:4px 2px;}
+  .sheetList{display:grid; gap:7px;}
+  .sheetList .ghost{width:100%; text-align:left; padding:13px 14px; font-size:13.5px;}
+  .sheetPreview{
+    margin-top:10px; padding:10px; background:#f7f9fb; border:1px solid var(--line); border-radius:10px;
+    font-size:11.5px; line-height:1.5; color:#4b5663; white-space:pre-wrap;
+    overflow-wrap:anywhere; word-break:break-all;
+    max-height:118px; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
+  }
+
+  #toast{
+    position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translate(-50%,12px);
+    background:rgba(18,24,31,.93); color:#fff; font-size:13px; font-weight:700;
+    padding:11px 17px; border-radius:999px; opacity:0; pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease; z-index:60; max-width:88vw; text-align:center;
+  }
+  #toast.show{opacity:1; transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+<main class="app">
+
+  <header class="head">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.1 7 13 7 13s7-7.9 7-13a7 7 0 0 0-7-7Zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2Z"/></svg>
+      <span>초기우수시설 위치 관리 · GRS80</span>
+    </div>
+    <h1>묻힌 시설도 좌표로 찾는다</h1>
+    <p class="sub">캐드·측량 GRS80 좌표를 이름과 함께 저장해 두고, 현장에서 폰 GPS로 거리와 방향을 바로 확인합니다.</p>
+  </header>
+
+  <!-- 현재 위치 -->
+  <section class="card gpsCard">
+    <div class="gpsTop">
+      <span class="dot" id="gpsDot"></span>
+      <span class="gpsTitle" id="gpsTitle">현재 위치 꺼짐</span>
+      <span class="gpsAcc" id="gpsAcc"></span>
+    </div>
+    <p class="gpsMsg" id="gpsMsg">위치를 켜면 서 있는 자리에서 선택한 시설까지의 거리와 방향을 보여 줍니다.</p>
+    <div class="gpsRow">
+      <button type="button" class="ghost" id="gpsBtn">현재 위치 켜기</button>
+      <button type="button" class="ghost" id="gpsSaveBtn">현재 위치를 시설로 저장</button>
+    </div>
+    <div class="gpsCoord" id="gpsCoord"></div>
+  </section>
+
+  <!-- 선택된 시설 -->
+  <section class="card" id="targetCard">
+    <div id="targetEmpty" class="emptyBig">
+      <strong>아직 고른 시설이 없습니다</strong>
+      <p>아래 <b>새 시설 추가</b>에서 좌표를 넣어 저장하거나,<br>목록에서 시설을 눌러 주세요.</p>
+    </div>
+
+    <div id="targetBody" class="hidden">
+      <div class="badges" id="tBadges"></div>
+      <h2 class="facName" id="tName"></h2>
+      <p class="facMemo" id="tMemo"></p>
+
+      <div class="distBox off" id="distBox">
+        <div class="arrowWrap"><div class="arrow" id="arrow">↑</div></div>
+        <div style="min-width:0">
+          <div class="distMain" id="distMain">거리 확인 전</div>
+          <div class="distDir" id="distDir"></div>
+          <div class="distSub" id="distSub">현재 위치를 켜면 여기까지의 거리와 방향이 나옵니다.</div>
+        </div>
+      </div>
+
+      <div class="coordRows">
+        <div class="coordRow"><span class="k">위도</span><span class="v" id="tLat">–</span></div>
+        <div class="coordRow"><span class="k">경도</span><span class="v" id="tLon">–</span></div>
+        <div class="dms" id="tDms"></div>
+      </div>
+      <div class="meta" id="tMeta"></div>
+
+      <div class="actions4">
+        <a class="mapBtn kakao" id="lnkKakaoMap" href="#" target="_blank" rel="noopener noreferrer">카카오맵<small>위치 보기</small></a>
+        <a class="mapBtn naver" id="lnkNaverMap" href="#" target="_blank" rel="noopener noreferrer">네이버지도<small>위치 보기</small></a>
+        <a class="mapBtn kakao" id="lnkKakaoTo" href="#" target="_blank" rel="noopener noreferrer">카카오 길찾기<small>현 위치에서</small></a>
+        <a class="mapBtn naver" id="lnkNaverTo" href="#" target="_blank" rel="noopener noreferrer">네이버 길찾기<small>현 위치에서</small></a>
+      </div>
+
+      <div class="secLabel">공유 · 다른 사람에게 이 위치 보내기</div>
+      <div class="shareGrid">
+        <button type="button" class="ghost" id="shareNativeBtn">공유하기</button>
+        <button type="button" class="ghost" id="shareTextBtn">안내문 복사</button>
+        <button type="button" class="ghost" id="copyKakaoBtn">카카오맵 링크</button>
+        <button type="button" class="ghost" id="copyNaverBtn">네이버지도 링크</button>
+        <button type="button" class="ghost wide" id="copyPageBtn">이 위치 페이지 링크 복사</button>
+      </div>
+
+      <div class="rowBtns" id="saveRow">
+        <button type="button" class="ghost accent" id="saveBtn">이 위치를 시설로 저장</button>
+      </div>
+      <div class="rowBtns" id="manageRow">
+        <button type="button" class="ghost" id="editBtn">이름·메모 수정</button>
+        <button type="button" class="ghost" id="coordCopyBtn">좌표 복사</button>
+      </div>
+
+      <details class="alt" id="altBox">
+        <summary>다른 원점으로 보면 (원점이 헷갈릴 때)</summary>
+        <div class="altList" id="altList"></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- 시설 목록 -->
+  <section class="card" id="listCard">
+    <div class="cardTitle">
+      <h2>저장한 시설</h2>
+      <span class="count" id="listCount">0곳</span>
+    </div>
+    <div class="listTools">
+      <button type="button" class="ghost" id="sortBtn">이름순</button>
+      <button type="button" class="ghost" id="exportJsonBtn">백업 저장</button>
+      <button type="button" class="ghost" id="exportCsvBtn">CSV</button>
+      <span class="importBtnWrap">
+        <button type="button" class="ghost">불러오기</button>
+        <input type="file" id="importInput" accept=".json,.csv,text/csv,application/json">
+      </span>
+    </div>
+    <ul class="histList" id="facList"></ul>
+    <div class="emptyBox hidden" id="listEmpty">저장한 시설이 없습니다. 아래 <b>새 시설 추가</b>에서 등록하세요.</div>
+    <div style="text-align:right; margin-top:6px;">
+      <button type="button" class="linkBtn danger hidden" id="clearAllBtn">저장한 시설 모두 지우기</button>
+    </div>
+  </section>
+
+  <!-- 새 시설 추가 -->
+  <details id="addCard">
+    <summary><span>새 시설 추가 · 좌표 변환</span><span class="st" id="addState"></span></summary>
+    <div class="addBody">
+      <form id="coordForm" autocomplete="off" novalidate>
+        <label class="lbl" for="crs">좌표계</label>
+        <select id="crs"></select>
+        <p class="hint" id="crsHint"></p>
+
+        <div class="pasteRow">
+          <input id="paste" type="text" placeholder="붙여넣기 — 예: X = 201234.56  Y = 543210.12  Z = 34.56" aria-label="좌표 한 줄 붙여넣기">
+          <button type="button" class="mini" id="pasteBtn">넣기</button>
+        </div>
+        <p class="hint">쉼표·공백·탭, 캐드 <b>ID</b> 명령 결과(X=, Y=, Z=)를 그대로 붙여넣어도 됩니다.</p>
+
+        <div class="fields">
+          <div class="field">
+            <label for="inX" id="lblX">X <em>(동거 E)</em></label>
+            <input id="inX" type="text" inputmode="decimal" enterkeyhint="next" placeholder="198053.65" aria-label="X 좌표">
+          </div>
+          <div class="field">
+            <label for="inY" id="lblY">Y <em>(북거 N)</em></label>
+            <input id="inY" type="text" inputmode="decimal" enterkeyhint="next" placeholder="551888.92" aria-label="Y 좌표">
+          </div>
+          <div class="field z">
+            <label for="inZ" id="lblZ">Z <em>(표고, 선택)</em></label>
+            <input id="inZ" type="text" inputmode="decimal" enterkeyhint="next" placeholder="선택" aria-label="Z 값 (표고, 선택)">
+          </div>
+        </div>
+
+        <div class="swapRow">
+          <button type="button" class="ghost" id="swapBtn">⇄ X ↔ Y 바꾸기</button>
+          <span class="swapState" id="swapState"></span>
+        </div>
+
+        <div class="nameRow">
+          <div class="two">
+            <div>
+              <label class="lbl" for="inName">시설명</label>
+              <input id="inName" type="text" placeholder="초기우수시설 1호" enterkeyhint="next">
+            </div>
+            <div>
+              <label class="lbl" for="inMemo">현장 메모</label>
+              <input id="inMemo" type="text" placeholder="배수로 우측 맨홀 옆" enterkeyhint="done">
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; gap:7px; margin-top:13px;">
+          <button type="submit" class="primary" id="goBtn">좌표 확인 · 지도 보기</button>
+          <button type="button" class="ghost" id="goSaveBtn" style="width:100%; padding:14px;">확인하고 바로 저장</button>
+        </div>
+
+        <p class="err hidden" id="err" role="alert"></p>
+        <p class="warn hidden" id="warn"></p>
+      </form>
+    </div>
+  </details>
+
+  <footer>
+    설치·로그인·인터넷 없이 동작하는 단일 파일입니다.<br>
+    GRS80 횡단메르카토르 역변환 (a=6378137, 1/f=298.257222101) · 지도 표시는 WGS84 경위도 기준<br>
+    <b>중요:</b> 기록은 이 브라우저에만 저장됩니다. 폰을 바꾸거나 기록을 지우기 전에 <b>백업 저장</b>으로 파일을 남겨 두세요.<br>
+    이 파일을 웹에 올리면 <b>이 화면 링크</b>로도 위치를 공유할 수 있습니다.
+  </footer>
+</main>
+
+<div class="sheetWrap hidden" id="sheetWrap" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheetBackdrop" id="sheetBackdrop"></div>
+  <div class="sheet">
+    <div class="sheetHead">
+      <strong id="sheetTitle">공유</strong>
+      <button type="button" id="sheetClose">닫기</button>
+    </div>
+    <div class="sheetList">
+      <button type="button" class="ghost" id="sheetShare">공유 시트로 보내기 (카카오톡·문자 등)</button>
+      <button type="button" class="ghost" id="sheetText">안내문 복사 — 이름·좌표·링크 한 번에</button>
+      <button type="button" class="ghost" id="sheetKakao">카카오맵 링크 복사</button>
+      <button type="button" class="ghost" id="sheetNaver">네이버지도 링크 복사</button>
+      <button type="button" class="ghost" id="sheetPage">이 위치 페이지 링크 복사</button>
+    </div>
+    <div class="sheetPreview" id="sheetPreview"></div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===================================================================
+     1. 좌표 변환 코어 — GRS80 횡단메르카토르(TM) 역변환
+        Snyder, Map Projections – A Working Manual (USGS PP 1395)
+     =================================================================== */
+
+  var GRS80 = { a: 6378137.0, rf: 298.257222101 };
+
+  var CRS_LIST = [
+    { code: "EPSG:5186", label: "중부원점 · EPSG:5186 (기본)", short: "중부",   group: "g2010", lat0: 38,   lon0: 127,   k0: 1.0,    FE: 200000,  FN: 600000 },
+    { code: "EPSG:5185", label: "서부원점 · EPSG:5185",         short: "서부",   group: "g2010", lat0: 38,   lon0: 125,   k0: 1.0,    FE: 200000,  FN: 600000 },
+    { code: "EPSG:5187", label: "동부원점 · EPSG:5187",         short: "동부",   group: "g2010", lat0: 38,   lon0: 129,   k0: 1.0,    FE: 200000,  FN: 600000 },
+    { code: "EPSG:5188", label: "동해원점 · EPSG:5188",         short: "동해",   group: "g2010", lat0: 38,   lon0: 131,   k0: 1.0,    FE: 200000,  FN: 600000 },
+    { code: "EPSG:5179", label: "통합원점 · EPSG:5179 (UTM-K)",  short: "통합",   group: "g5179", lat0: 38,   lon0: 127.5, k0: 0.9996, FE: 1000000, FN: 2000000 },
+    { code: "EPSG:5181", label: "중부원점(구) · EPSG:5181",      short: "중부구", group: "g5181", lat0: 38,   lon0: 127,   k0: 1.0,    FE: 200000,  FN: 500000 },
+    { code: "GEO",       label: "위·경도 직접 입력",            short: "위경도", group: "geo",   lat0: 0,    lon0: 0,     k0: 1.0,    FE: 0,       FN: 0,      geo: true }
+  ];
+
+  var CRS_GROUPS = [
+    { id: "g2010", name: "측량·공공데이터 표준 (2010)" },
+    { id: "g5179", name: "통합 좌표계" },
+    { id: "g5181", name: "구 좌표계" },
+    { id: "geo",   name: "직접 입력" }
+  ];
+
+  function rad(d) { return d * Math.PI / 180; }
+  function deg(r) { return r * 180 / Math.PI; }
+
+  function ellParams(ell) {
+    var f = 1 / ell.rf;
+    var e2 = f * (2 - f);
+    return { a: ell.a, f: f, e2: e2, ep2: e2 / (1 - e2) };
+  }
+
+  function meridianArc(phi, p) {
+    var e2 = p.e2, e4 = e2 * e2, e6 = e4 * e2;
+    return p.a * ((1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * phi
+      - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * Math.sin(2 * phi)
+      + (15 * e4 / 256 + 45 * e6 / 1024) * Math.sin(4 * phi)
+      - (35 * e6 / 3072) * Math.sin(6 * phi));
+  }
+
+  function footpointLatitude(M, p) {
+    var e2 = p.e2;
+    var e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));
+    var mu = M / (p.a * (1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 * e2 * e2 / 256));
+    return mu
+      + (3 * e1 / 2 - 27 * Math.pow(e1, 3) / 32) * Math.sin(2 * mu)
+      + (21 * e1 * e1 / 16 - 55 * Math.pow(e1, 4) / 32) * Math.sin(4 * mu)
+      + (151 * Math.pow(e1, 3) / 96) * Math.sin(6 * mu)
+      + (1097 * Math.pow(e1, 4) / 512) * Math.sin(8 * mu);
+  }
+
+  function tmInverse(E, N, crs) {
+    var p = ellParams(GRS80);
+    var e2 = p.e2, ep2 = p.ep2;
+    var x = E - crs.FE;
+    var y = N - crs.FN;
+    var M = y / crs.k0 + meridianArc(rad(crs.lat0), p);
+    var phi1 = footpointLatitude(M, p);
+
+    var sinp = Math.sin(phi1), cosp = Math.cos(phi1), tanp = Math.tan(phi1);
+    var C1 = ep2 * cosp * cosp;
+    var T1 = tanp * tanp;
+    var W = 1 - e2 * sinp * sinp;
+    var N1 = p.a / Math.sqrt(W);
+    var R1 = p.a * (1 - e2) / Math.pow(W, 1.5);
+    var D = x / (N1 * crs.k0);
+
+    var D2 = D * D, D3 = D2 * D, D4 = D3 * D, D5 = D4 * D, D6 = D5 * D;
+
+    var lat = phi1 - (N1 * tanp / R1) * (
+        D2 / 2
+      - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1 - 9 * ep2) * D4 / 24
+      + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * ep2 - 3 * C1 * C1) * D6 / 720);
+
+    var lon = rad(crs.lon0) + (
+        D
+      - (1 + 2 * T1 + C1) * D3 / 6
+      + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * ep2 + 24 * T1 * T1) * D5 / 120) / cosp;
+
+    return { lat: deg(lat), lon: deg(lon) };
+  }
+
+  /* ===================================================================
+     2. 값 다루기 — 숫자·DMS·거리·방위
+     =================================================================== */
+
+  function num(str) {
+    if (str === null || str === undefined) return NaN;
+    var s = String(str).trim();
+    if (!s) return NaN;
+    s = s.replace(/^[A-Za-z]{1,3}\s*[=:]/, "");
+    s = s.replace(/[,\u00A0\s]/g, "");
+    s = s.replace(/(m|M|미터|meter|metre)$/, "");
+    if (!/^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(s)) return NaN;
+    return parseFloat(s);
+  }
+
+  /* AutoCAD ID 결과까지 포함해 좌표를 뽑아낸다.
+     "X = 201234.56  Y = 543210.12  Z = 34.56" / "X=..,Y=..,Z=.." / "201234.56 543210.12 34.56" */
+  function parseCoords(str) {
+    var out = { x: NaN, y: NaN, z: NaN, labeled: false };
+    if (str === null || str === undefined) return out;
+    var s = String(str)
+      .replace(/[\uFF0C\u3001\uFF1B;\u3000\t\r\n]/g, " ")
+      .replace(/\u00A0/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!s) return out;
+
+    // 라벨(X/Y/Z, N/E) 붙은 값 먼저
+    var lab = {}, re = /([A-Za-z]{1,2})\s*[=:]?\s*([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)/g, m;
+    while ((m = re.exec(s)) !== null) {
+      var k = m[1].toUpperCase();
+      if (k.length !== 1 || "XYZEN".indexOf(k) < 0) continue;
+      if (lab[k] === undefined) lab[k] = parseFloat(m[2]);
+    }
+    var hasXY = (lab.X !== undefined && lab.Y !== undefined);
+    var hasNE = (lab.N !== undefined && lab.E !== undefined);
+    if (hasXY || hasNE) {
+      out.labeled = true;
+      if (hasXY) { out.x = lab.X; out.y = lab.Y; }
+      else { out.x = lab.E; out.y = lab.N; }
+      if (lab.Z !== undefined) out.z = lab.Z;
+      return out;
+    }
+
+    // 라벨이 없으면 나온 순서대로
+    var parts = s.split(/[\s,]+/), nums = [];
+    for (var i = 0; i < parts.length; i++) {
+      var v = num(parts[i]);
+      if (isFinite(v)) nums.push(v);
+    }
+    if (nums.length >= 2) { out.x = nums[0]; out.y = nums[1]; }
+    if (nums.length >= 3) out.z = nums[2];
+    return out;
+  }
+
+  function toDMS(v, isLat) {
+    var hemi = isLat ? (v >= 0 ? "N" : "S") : (v >= 0 ? "E" : "W");
+    var a = Math.abs(v), d = Math.floor(a), mf = (a - d) * 60, m = Math.floor(mf), s = (mf - m) * 60;
+    if (s >= 59.995) { s = 0; m += 1; }
+    if (m >= 60) { m = 0; d += 1; }
+    return d + "\u00B0 " + m + "\u2032 " + (s < 10 ? "0" : "") + s.toFixed(2) + "\u2033 " + hemi;
+  }
+
+  function fmt(v, d) { return Number(v).toFixed(d); }
+
+  function inKorea(lat, lon) {
+    return lat >= 32.0 && lat <= 39.7 && lon >= 123.4 && lon <= 132.6;
+  }
+
+  function resolveOrder(x, y, crs) {
+    var a = tmInverse(x, y, crs);
+    var b = tmInverse(y, x, crs);
+    var va = isFinite(a.lat) && isFinite(a.lon) && inKorea(a.lat, a.lon);
+    var vb = isFinite(b.lat) && isFinite(b.lon) && inKorea(b.lat, b.lon);
+    if (va && !vb) return { E: x, N: y, res: a, swapped: false, ok: true };
+    if (!va && vb) return { E: y, N: x, res: b, swapped: true, ok: true };
+    if (va && vb) {
+      var da = Math.abs(a.lon - crs.lon0), db = Math.abs(b.lon - crs.lon0);
+      if (db + 0.05 < da) return { E: y, N: x, res: b, swapped: true, ok: true };
+      return { E: x, N: y, res: a, swapped: false, ok: true };
+    }
+    return { E: x, N: y, res: a, swapped: false, ok: false };
+  }
+
+  var R_EARTH = 6371008.8;
+
+  /* Vincenty 역해법으로 거리·방위 계산 (WGS84/GRS80). 수렴하지 않으면 구 근사로 대체. */
+  function geoTo(lat1, lon1, lat2, lon2) {
+    var a = 6378137.0, f = 1 / 298.257223563, b = a * (1 - f);
+    var L = rad(lon2 - lon1);
+    var U1 = Math.atan((1 - f) * Math.tan(rad(lat1)));
+    var U2 = Math.atan((1 - f) * Math.tan(rad(lat2)));
+    var sU1 = Math.sin(U1), cU1 = Math.cos(U1), sU2 = Math.sin(U2), cU2 = Math.cos(U2);
+    var lam = L, lamP, iter = 0, sinSig, cosSig, sig, sinAlpha, cos2Alpha, cos2SigM, C;
+    do {
+      var sinLam = Math.sin(lam), cosLam = Math.cos(lam);
+      var t1 = cU2 * sinLam, t2 = cU1 * sU2 - sU1 * cU2 * cosLam;
+      var sinSqSig = t1 * t1 + t2 * t2;
+      if (sinSqSig === 0) return { d: 0, az: 0 };
+      sinSig = Math.sqrt(sinSqSig);
+      cosSig = sU1 * sU2 + cU1 * cU2 * cosLam;
+      sig = Math.atan2(sinSig, cosSig);
+      sinAlpha = cU1 * cU2 * sinLam / sinSig;
+      cos2Alpha = 1 - sinAlpha * sinAlpha;
+      cos2SigM = (cos2Alpha === 0) ? 0 : cosSig - 2 * sU1 * sU2 / cos2Alpha;
+      C = f / 16 * cos2Alpha * (4 + f * (4 - 3 * cos2Alpha));
+      lamP = lam;
+      lam = L + (1 - C) * f * sinAlpha *
+        (sig + C * sinSig * (cos2SigM + C * cosSig * (-1 + 2 * cos2SigM * cos2SigM)));
+    } while (Math.abs(lam - lamP) > 1e-12 && ++iter < 120);
+
+    if (iter >= 120 || !isFinite(lam)) {
+      // 대칭축에 가까운 예외: 구 근사
+      var p1 = rad(lat1), p2 = rad(lat2), dp = p2 - p1, dl = rad(lon2 - lon1);
+      var h = Math.sin(dp / 2) * Math.sin(dp / 2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
+      return { d: 2 * R_EARTH * Math.asin(Math.min(1, Math.sqrt(h))), az: 0 };
+    }
+
+    var uSq = cos2Alpha * (a * a - b * b) / (b * b);
+    var A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq)));
+    var B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq)));
+    var dSig = B * sinSig * (cos2SigM + B / 4 * (
+        cosSig * (-1 + 2 * cos2SigM * cos2SigM) -
+        B / 6 * cos2SigM * (-3 + 4 * sinSig * sinSig) * (-3 + 4 * cos2SigM * cos2SigM)));
+    var s = b * A * (sig - dSig);
+    var az = deg(Math.atan2(cU2 * Math.sin(lam), cU1 * sU2 - sU1 * cU2 * Math.cos(lam)));
+    return { d: s, az: (az + 360) % 360 };
+  }
+
+  function distanceM(lat1, lon1, lat2, lon2) {
+    return geoTo(lat1, lon1, lat2, lon2).d;
+  }
+
+  function bearingDeg(lat1, lon1, lat2, lon2) {
+    return geoTo(lat1, lon1, lat2, lon2).az;
+  }
+
+  var DIRS = ["북", "북북동", "북동", "동북동", "동", "동남동", "남동", "남남동",
+              "남", "남남서", "남서", "서남서", "서", "서북서", "북서", "북북서"];
+  function dirName(b) { return DIRS[Math.round(b / 22.5) % 16]; }
+
+  function fmtDist(m) {
+    if (m < 1000) return (m < 10 ? m.toFixed(1) : Math.round(m)) + " m";
+    if (m < 10000) return (m / 1000).toFixed(2) + " km";
+    return (m / 1000).toFixed(1) + " km";
+  }
+
+  /* ===================================================================
+     3. 저장소
+     =================================================================== */
+
+  var KEY_F = "grs80.facilities.v1";
+  var KEY_S = "grs80.settings.v1";
+  var storageOk = true;
+  var memFacilities = [];
+  var settings = { crs: "EPSG:5186", sort: "name" };
+
+  function readLS(key) {
+    try { return window.localStorage.getItem(key); }
+    catch (e) { storageOk = false; return null; }
+  }
+  function writeLS(key, val) {
+    if (!storageOk) return;
+    try { window.localStorage.setItem(key, val); }
+    catch (e) { storageOk = false; }
+  }
+
+  function loadFacilities() {
+    var raw = readLS(KEY_F);
+    if (raw === null) return memFacilities.slice();
+    try {
+      var arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      return arr.filter(function (f) {
+        return f && isFinite(f.lat) && isFinite(f.lon);
+      });
+    } catch (e) { return []; }
+  }
+
+  function saveFacilities(arr) {
+    memFacilities = arr;
+    writeLS(KEY_F, JSON.stringify(arr));
+  }
+
+  function loadSettings() {
+    var raw = readLS(KEY_S);
+    if (!raw) return;
+    try {
+      var o = JSON.parse(raw);
+      if (o && o.crs) settings.crs = o.crs;
+      if (o && (o.sort === "name" || o.sort === "dist")) settings.sort = o.sort;
+    } catch (e) {}
+  }
+  function saveSettings() { writeLS(KEY_S, JSON.stringify(settings)); }
+
+  /* ===================================================================
+     4. 화면
+     =================================================================== */
+
+  var $ = function (id) { return document.getElementById(id); };
+  var els = {};
+  var state = {
+    swapped: false,
+    current: null,     // { id | null, name, memo, code, lat, lon, E, N, z, swapped, createdAt }
+    editingId: null,
+    gps: { active: false, watch: null, lat: null, lon: null, acc: null, at: 0, err: null, waiting: false }
+  };
+
+  function currentCrs() {
+    var code = els.crs.value || settings.crs;
+    for (var i = 0; i < CRS_LIST.length; i++) if (CRS_LIST[i].code === code) return CRS_LIST[i];
+    return CRS_LIST[0];
+  }
+
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { t.classList.remove("show"); }, 2200);
+  }
+
+  function showErr(msg) { els.err.textContent = msg; els.err.classList.remove("hidden"); }
+  function clearErr() { els.err.textContent = ""; els.err.classList.add("hidden"); }
+  function showWarn(msg) {
+    if (!msg) { els.warn.classList.add("hidden"); els.warn.textContent = ""; return; }
+    els.warn.textContent = msg; els.warn.classList.remove("hidden");
+  }
+
+  /* ---------- 좌표계 선택 ---------- */
+  function buildCrsSelect() {
+    var sel = els.crs;
+    for (var g = 0; g < CRS_GROUPS.length; g++) {
+      var grp = document.createElement("optgroup");
+      grp.label = CRS_GROUPS[g].name;
+      for (var i = 0; i < CRS_LIST.length; i++) {
+        if (CRS_LIST[i].group !== CRS_GROUPS[g].id) continue;
+        var op = document.createElement("option");
+        op.value = CRS_LIST[i].code;
+        op.textContent = CRS_LIST[i].label;
+        grp.appendChild(op);
+      }
+      sel.appendChild(grp);
+    }
+    sel.value = settings.crs;
+  }
+
+  function refreshMode() {
+    var crs = currentCrs();
+    if (crs.geo) {
+      els.lblX.innerHTML = "위도 <em>(°, N)</em>";
+      els.lblY.innerHTML = "경도 <em>(°, E)</em>";
+      els.inX.placeholder = "37.5665350";
+      els.inY.placeholder = "126.9779692";
+      els.crsHint.innerHTML = "위도·경도를 십진수로 넣습니다.";
+      els.swapBtn.classList.add("hidden");
+    } else {
+      els.swapBtn.classList.remove("hidden");
+      els.crsHint.innerHTML = "원점 " + crs.short + " · 기준 " + crs.lat0 + "\u00B0N/" + crs.lon0 +
+        "\u00B0E · 동거상수 " + crs.FE.toLocaleString() + " · 북거상수 " + crs.FN.toLocaleString();
+      renderOrderLabels();
+    }
+  }
+
+  function renderOrderLabels() {
+    if (state.swapped) {
+      els.lblX.innerHTML = "X <em>(북거 N)</em>";
+      els.lblY.innerHTML = "Y <em>(동거 E)</em>";
+      els.inX.placeholder = "551888.92";
+      els.inY.placeholder = "198053.65";
+      els.swapState.textContent = "X=북거(N), Y=동거(E)";
+      els.swapState.classList.add("on");
+    } else {
+      els.lblX.innerHTML = "X <em>(동거 E)</em>";
+      els.lblY.innerHTML = "Y <em>(북거 N)</em>";
+      els.inX.placeholder = "198053.65";
+      els.inY.placeholder = "551888.92";
+      els.swapState.textContent = "X=동거(E), Y=북거(N)";
+      els.swapState.classList.remove("on");
+    }
+  }
+
+  /* ---------- 변환 ---------- */
+  function convertInputs() {
+    var crs = currentCrs();
+    var x = num(els.inX.value), y = num(els.inY.value), z = num(els.inZ.value);
+    var lat, lon, E = null, N = null, swapped = false;
+
+    if (crs.geo) {
+      if (!isFinite(x) || !isFinite(y)) { showErr("위도와 경도를 숫자로 입력해 주세요."); return null; }
+      if (Math.abs(x) > 90 || Math.abs(y) > 180) { showErr("위도는 -90~90, 경도는 -180~180 사이여야 합니다."); return null; }
+      lat = x; lon = y;
+    } else {
+      if (!isFinite(x) || !isFinite(y)) { showErr("X와 Y 좌표를 숫자로 입력해 주세요. (예: 198053.65 / 551888.92)"); return null; }
+      var r = resolveOrder(x, y, crs);
+      E = r.E; N = r.N; lat = r.res.lat; lon = r.res.lon; swapped = r.swapped;
+      if (!isFinite(lat) || !isFinite(lon) || Math.abs(lat) > 89) {
+        showErr("이 좌표로는 위치를 계산할 수 없습니다. 값과 좌표계를 확인해 주세요."); return null;
+      }
+      if (state.swapped !== swapped) { state.swapped = swapped; renderOrderLabels(); }
+      if (!r.ok) {
+        showWarn("대한민국 범위를 벗어난 결과입니다. 원점 선택과 X·Y 순서를 확인해 주세요.");
+      } else if (Math.abs(lon - crs.lon0) > 2.5) {
+        showWarn(crs.short + "원점(동경 " + crs.lon0 + "\u00B0)에서 약 " +
+          Math.abs(lon - crs.lon0).toFixed(1) + "\u00B0 떨어진 위치입니다. 원점을 확인해 주세요.");
+      } else if (!inKorea(lat, lon)) {
+        showWarn("대한민국 범위를 벗어난 위치입니다. 좌표계와 값을 확인해 주세요.");
+      }
+    }
+
+    return { id: null, code: crs.code, lat: lat, lon: lon, E: E, N: N,
+             z: isFinite(z) ? z : null, swapped: swapped, createdAt: Date.now() };
+  }
+
+  function guessName() {
+    var list = loadFacilities(), max = 0;
+    for (var i = 0; i < list.length; i++) {
+      var m = /초기우수시설\s*(\d+)\s*호/.exec(list[i].name || "");
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    }
+    return "초기우수시설 " + (max + 1) + "호";
+  }
+
+  function doConvert(alsoSave) {
+    clearErr(); showWarn("");
+    var c = convertInputs();
+    if (!c) return;
+    c.name = (els.inName.value || "").trim() || guessName();
+    c.memo = (els.inMemo.value || "").trim();
+    setCurrent(c);
+    if (alsoSave) saveCurrent();
+  }
+
+  /* ---------- 선택된 시설 표시 ---------- */
+  function crsOf(code) {
+    for (var i = 0; i < CRS_LIST.length; i++) if (CRS_LIST[i].code === code) return CRS_LIST[i];
+    return CRS_LIST[0];
+  }
+
+  function setCurrent(c) {
+    state.current = c;
+    renderTarget();
+    updateGpsView();
+  }
+
+  function renderTarget() {
+    var c = state.current;
+    if (!c) {
+      els.targetEmpty.classList.remove("hidden");
+      els.targetBody.classList.add("hidden");
+      return;
+    }
+    els.targetEmpty.classList.add("hidden");
+    els.targetBody.classList.remove("hidden");
+
+    var crs = crsOf(c.code);
+    var badges = '<span class="badge">' + (crs.geo ? "위·경도" : crs.code + " · " + crs.short + "원점") + "</span>";
+    if (!crs.geo) {
+      badges += '<span class="badge sub">' + (c.swapped ? "X=북거 · Y=동거" : "X=동거 · Y=북거") + "</span>";
+    }
+    if (!c.id) badges += '<span class="badge warnb">저장 안 됨</span>';
+    els.tBadges.innerHTML = badges;
+
+    els.tName.textContent = c.name || "이름 없음";
+    els.tMemo.textContent = c.memo || "";
+    els.tMemo.classList.toggle("hidden", !c.memo);
+
+    els.tLat.textContent = fmt(c.lat, 7);
+    els.tLon.textContent = fmt(c.lon, 7);
+    els.tDms.textContent = toDMS(c.lat, true) + "   " + toDMS(c.lon, false);
+
+    var meta = "";
+    if (!crs.geo && c.E !== null && c.E !== undefined) {
+      meta += "<div>입력 좌표 · 동거 E " + fmt(c.E, 2) + " m · 북거 N " + fmt(c.N, 2) + " m</div>";
+    }
+    meta += "<div>표고(Z) · " + (c.z === null || c.z === undefined ? "없음" : fmt(c.z, 2) + " m") + "</div>";
+    if (c.id && c.createdAt) {
+      var d = new Date(c.createdAt);
+      meta += "<div>등록 " + d.getFullYear() + "." + (d.getMonth() + 1) + "." + d.getDate() + "</div>";
+    }
+    els.tMeta.innerHTML = meta;
+
+    els.lnkKakaoMap.href = kakaoMapUrl(c);
+    els.lnkNaverMap.href = naverMapUrl(c);
+    els.lnkKakaoTo.href = kakaoToUrl(c);
+    els.lnkNaverTo.href = naverRouteUrl(c);
+
+    els.saveRow.classList.toggle("hidden", !!c.id);
+    els.manageRow.classList.toggle("hidden", !c.id);
+
+    if (!crs.geo) buildAltList(c);
+    // 대한민국 범위를 벗어난 결과면 원점 후보를 펼쳐 보여 준다
+    if (!crs.geo && !inKorea(c.lat, c.lon)) els.altBox.open = true;
+  }
+
+  /* 네이버 길찾기: 출발(현재 위치, 알면 좌표로) → 도착(시설) */
+  function naverRouteUrl(c) {
+    var base = "https://m.map.naver.com/route.nhn?menu=route&pathType=1&showMap=true";
+    var g = state.gps;
+    if (g.active && g.lat !== null) {
+      base += "&sname=" + encodeURIComponent("현재 위치") + "&sx=" + fmt(g.lon, 7) + "&sy=" + fmt(g.lat, 7);
+    }
+    base += "&ename=" + encodeURIComponent(c.name || "시설") +
+            "&ex=" + fmt(c.lon, 7) + "&ey=" + fmt(c.lat, 7);
+    return base;
+  }
+
+  function buildAltList(c) {
+    var box = els.altList;
+    var show = !!(c && c.E !== null && c.E !== undefined);
+    els.altBox.classList.toggle("hidden", !show);
+    if (!show) return;
+    box.innerHTML = "";
+    var any = false;
+    for (var i = 0; i < CRS_LIST.length; i++) {
+      var k = CRS_LIST[i];
+      if (k.geo || k.code === c.code) continue;
+      var p = tmInverse(c.E, c.N, k);
+      if (!isFinite(p.lat) || !inKorea(p.lat, p.lon)) continue;
+      any = true;
+      var div = document.createElement("div");
+      div.innerHTML = '<span class="c">' + k.short + "원점</span>" + fmt(p.lat, 6) + ", " + fmt(p.lon, 6);
+      box.appendChild(div);
+    }
+    if (!any) box.innerHTML = '<div style="color:var(--muted)">다른 원점으로는 대한민국 범위를 벗어납니다.</div>';
+    els.altBox.open = false;
+  }
+
+  /* ---------- 링크·공유 ---------- */
+  function kakaoMapUrl(c) {
+    return "https://map.kakao.com/link/map/" + encodeURIComponent(c.name || "시설") + "," + fmt(c.lat, 7) + "," + fmt(c.lon, 7);
+  }
+  function naverMapUrl(c) {
+    return "https://map.naver.com/p/search/" + encodeURIComponent(fmt(c.lat, 7) + "," + fmt(c.lon, 7));
+  }
+  function kakaoToUrl(c) {
+    return "https://map.kakao.com/link/to/" + encodeURIComponent(c.name || "시설") + "," + fmt(c.lat, 7) + "," + fmt(c.lon, 7);
+  }
+
+  /* 이 화면을 웹에 올렸을 때 쓸 수 있는 주소 (파일로 열었으면 없음) */
+  function pageLinkUrl(c) {
+    if (!/^https?:$/.test(location.protocol) || !c) return null;
+    var base = location.origin + location.pathname;
+    var p = ["name=" + encodeURIComponent(c.name || "")];
+    if (c.memo) p.push("memo=" + encodeURIComponent(c.memo));
+    var crs = crsOf(c.code);
+    if (crs.geo) {
+      p.push("epsg=geo");
+      p.push("lat=" + fmt(c.lat, 7));
+      p.push("lon=" + fmt(c.lon, 7));
+    } else {
+      p.push("epsg=" + crs.code.replace("EPSG:", ""));
+      p.push("x=" + fmt(c.E, 3));
+      p.push("y=" + fmt(c.N, 3));
+      if (c.z !== null && c.z !== undefined) p.push("z=" + fmt(c.z, 2));
+    }
+    return base + "?" + p.join("&");
+  }
+
+  function shareTextFor(c) {
+    var crs = crsOf(c.code);
+    var lines = [];
+    lines.push("[" + (c.name || "시설") + "]");
+    if (c.memo) lines.push(c.memo);
+    lines.push("");
+    if (!crs.geo && c.E !== null && c.E !== undefined) {
+      var ord = c.swapped
+        ? "X(북거) " + fmt(c.N, 2) + " / Y(동거) " + fmt(c.E, 2)
+        : "X(동거) " + fmt(c.E, 2) + " / Y(북거) " + fmt(c.N, 2);
+      if (c.z !== null && c.z !== undefined) ord += " / Z " + fmt(c.z, 2) + " m";
+      lines.push("· GRS80 " + crs.short + "원점 (" + crs.code + ")  " + ord);
+    } else {
+      lines.push("· GRS80 위·경도");
+    }
+    lines.push("· 위도 " + fmt(c.lat, 7) + ", 경도 " + fmt(c.lon, 7));
+    lines.push("· 카카오맵 " + kakaoMapUrl(c));
+    lines.push("· 네이버지도 " + naverMapUrl(c));
+    var pu = pageLinkUrl(c);
+    if (pu) lines.push("· 이 화면 " + pu);
+    return lines.join("\n");
+  }
+
+  var shareTarget = null;
+
+  function copyKakao(c) { copyText(kakaoMapUrl(c), "카카오맵 링크를 복사했습니다."); }
+  function copyNaver(c) { copyText(naverMapUrl(c), "네이버지도 링크를 복사했습니다."); }
+  function copyShareText(c) { copyText(shareTextFor(c), "공유용 안내문을 복사했습니다."); }
+
+  function copyPageLink(c) {
+    var u = pageLinkUrl(c);
+    if (!u) {
+      toast("이 화면은 파일로 열려 있어 인터넷 주소가 없습니다. 카카오·네이버 링크를 대신 보내세요.");
+      return;
+    }
+    copyText(u, "이 위치 페이지 링크를 복사했습니다.");
+  }
+
+  function nativeShare(c) {
+    if (!navigator.share) { copyShareText(c); return; }
+    var data = { title: c.name || "시설 위치", text: shareTextFor(c) };
+    var u = pageLinkUrl(c);
+    if (u) data.url = u;
+    try {
+      var r = navigator.share(data);
+      if (r && r.catch) r.catch(function () {});
+    } catch (e) { copyShareText(c); }
+  }
+
+  function openSheet(c) {
+    if (!c) return;
+    shareTarget = c;
+    $("sheetTitle").textContent = (c.name || "시설") + " 공유";
+    $("sheetPreview").textContent = shareTextFor(c);
+    $("sheetShare").classList.toggle("hidden", !navigator.share);
+    $("sheetPage").classList.toggle("hidden", !pageLinkUrl(c));
+    $("sheetWrap").classList.remove("hidden");
+  }
+  function closeSheet() {
+    $("sheetWrap").classList.add("hidden");
+    shareTarget = null;
+  }
+
+  /* 링크로 열렸을 때 좌표 채우기: ?name=..&epsg=5186&x=..&y=..&z=..&memo=.. */
+  function parseQuery() {
+    var out = {};
+    var s = (location.search || "").replace(/^\?/, "");
+    var h = (location.hash || "").replace(/^#/, "");
+    if (h && h.indexOf("=") >= 0) s = s ? s + "&" + h : h;
+    if (!s) return out;
+    s.split("&").forEach(function (kv) {
+      if (!kv) return;
+      var i = kv.indexOf("=");
+      var k = i < 0 ? kv : kv.slice(0, i);
+      var v = i < 0 ? "" : kv.slice(i + 1);
+      try { v = decodeURIComponent(v.replace(/\+/g, " ")); } catch (e) {}
+      try { k = decodeURIComponent(k); } catch (e) {}
+      if (!(k in out)) out[k] = v;
+    });
+    return out;
+  }
+
+  function applyUrlParams() {
+    var p = parseQuery();
+    var name = p.name || p.title || "";
+    var memo = p.memo || "";
+    var epsg = String(p.epsg || p.crs || "");
+    var hasXY = (p.x !== undefined && p.y !== undefined && p.x !== "" && p.y !== "");
+    var hasLL = (p.lat !== undefined && p.lon !== undefined && p.lat !== "" && p.lon !== "");
+    if (!name && !hasXY && !hasLL) return false;
+
+    var code = "EPSG:5186";
+    if (/geo|wgs|4326/i.test(epsg) || (!hasXY && hasLL)) code = "GEO";
+    else if (epsg) {
+      var mm = epsg.match(/(\d{4})/);
+      if (mm) code = "EPSG:" + mm[1];
+    }
+    if (code !== "GEO" && crsOf(code).code !== code) code = "EPSG:5186";
+    els.crs.value = code;
+    state.swapped = false;
+    refreshMode();
+    clearErr(); showWarn("");
+
+    if (code === "GEO") {
+      if (hasLL) { els.inX.value = p.lat; els.inY.value = p.lon; }
+      else if (hasXY) { els.inX.value = p.x; els.inY.value = p.y; }
+      else return false;
+    } else {
+      if (!hasXY) return false;
+      els.inX.value = p.x;
+      els.inY.value = p.y;
+    }
+    els.inZ.value = p.z !== undefined ? p.z : "";
+    els.inName.value = name;
+    els.inMemo.value = memo;
+
+    var c = convertInputs();
+    if (!c) return false;
+    c.name = name || guessName();
+    c.memo = memo;
+    setCurrent(c);
+    els.addCard.open = false;
+    els.addState.textContent = "";
+    toast("공유된 위치를 열었습니다.");
+    return true;
+  }
+
+  /* ---------- 저장 / 수정 / 삭제 ---------- */
+  function newId() { return "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+  function saveCurrent() {
+    var c = state.current;
+    if (!c) return;
+    var name = (els.inName.value || "").trim() || c.name || guessName();
+    var memo = (els.inMemo.value || "").trim();
+    if (c.id) {
+      updateFacility(c.id, { name: name, memo: memo });
+      toast("저장했습니다.");
+      setCurrent(loadFacilities().filter(function (f) { return f.id === c.id; })[0] || c);
+      return;
+    }
+    var list = loadFacilities();
+    var dup = null;
+    for (var i = 0; i < list.length; i++) {
+      if (Math.abs(list[i].lat - c.lat) < 1e-7 && Math.abs(list[i].lon - c.lon) < 1e-7) { dup = list[i]; break; }
+    }
+    if (dup) {
+      if (!confirm("같은 위치의 시설이 이미 있습니다.\n\"" + dup.name + "\"\n그래도 새로 저장할까요?")) return;
+    }
+    var fac = {
+      id: newId(), name: name, memo: memo, code: c.code,
+      E: c.E, N: c.N, z: c.z, swapped: c.swapped,
+      lat: c.lat, lon: c.lon, createdAt: Date.now()
+    };
+    list.unshift(fac);
+    saveFacilities(list);
+    els.inName.value = "";
+    els.inMemo.value = "";
+    toast("\"" + name + "\" 저장 완료 (" + list.length + "곳)");
+    els.addState.textContent = "";
+    setCurrent(fac);
+    renderList();
+  }
+
+  function updateFacility(id, patch) {
+    var list = loadFacilities();
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].id === id) {
+        for (var k in patch) if (Object.prototype.hasOwnProperty.call(patch, k)) list[i][k] = patch[k];
+        list[i].updatedAt = Date.now();
+        break;
+      }
+    }
+    saveFacilities(list);
+    renderList();
+  }
+
+  function deleteFacility(id) {
+    var list = loadFacilities();
+    var f = null;
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) f = list[i];
+    if (!f) return;
+    if (!confirm("\"" + f.name + "\" 을(를) 목록에서 지울까요?\n(되돌릴 수 없습니다)") ) return;
+    list = list.filter(function (x) { return x.id !== id; });
+    saveFacilities(list);
+    if (state.current && state.current.id === id) setCurrent(null);
+    renderList();
+    toast("삭제했습니다.");
+  }
+
+  function selectFacility(id) {
+    var list = loadFacilities(), f = null;
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) f = list[i];
+    if (!f) return;
+    els.addState.textContent = "";
+    setCurrent({
+      id: f.id, name: f.name, memo: f.memo || "", code: f.code,
+      E: f.E, N: f.N, z: f.z, swapped: !!f.swapped,
+      lat: f.lat, lon: f.lon, createdAt: f.createdAt
+    });
+    els.addCard.open = false;
+    els.targetCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    renderList();
+  }
+
+  /* ---------- 목록 ---------- */
+  function renderList() {
+    var list = loadFacilities();
+    var ul = els.facList;
+    ul.innerHTML = "";
+    els.listCount.textContent = list.length + "곳";
+    els.listEmpty.classList.toggle("hidden", list.length > 0);
+    els.clearAllBtn.classList.toggle("hidden", list.length === 0);
+    els.sortBtn.classList.toggle("hidden", list.length === 0);
+
+    var view = list.slice();
+    if (settings.sort === "dist" && state.gps.active && state.gps.lat !== null) {
+      var g = state.gps;
+      view.sort(function (a, b) {
+        return distanceM(g.lat, g.lon, a.lat, a.lon) - distanceM(g.lat, g.lon, b.lat, b.lon);
+      });
+    } else {
+      view.sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "ko"); });
+    }
+    els.sortBtn.textContent = settings.sort === "dist" ? "가까운순" : "이름순";
+
+    view.forEach(function (f) {
+      var li = document.createElement("li");
+      li.className = "item" + (state.current && state.current.id === f.id ? " selected" : "");
+
+      if (state.editingId === f.id) {
+        var form = document.createElement("div");
+        form.className = "editForm";
+        form.innerHTML =
+          '<input type="text" class="eName" value="' + escAttr(f.name) + '" placeholder="시설명">' +
+          '<input type="text" class="eMemo" value="' + escAttr(f.memo || "") + '" placeholder="현장 메모">' +
+          '<div class="row"><button type="button" class="ghost accent eSave">저장</button>' +
+          '<button type="button" class="ghost eCancel">취소</button></div>';
+        form.querySelector(".eSave").addEventListener("click", function () {
+          var n = form.querySelector(".eName").value.trim();
+          var mm = form.querySelector(".eMemo").value.trim();
+          if (!n) { toast("시설명을 넣어 주세요."); return; }
+          updateFacility(f.id, { name: n, memo: mm });
+          state.editingId = null;
+          if (state.current && state.current.id === f.id) {
+            state.current.name = n; state.current.memo = mm;
+            renderTarget();
+          }
+          renderList();
+          toast("수정했습니다.");
+        });
+        form.querySelector(".eCancel").addEventListener("click", function () {
+          state.editingId = null; renderList();
+        });
+        li.appendChild(form);
+        ul.appendChild(li);
+        return;
+      }
+
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "itemMain";
+      var sub = [];
+      if (f.memo) sub.push(f.memo);
+      if (f.code === "GEO") sub.push("위·경도");
+      else sub.push(crsOf(f.code).short + "원점");
+      var distTxt = "";
+      if (state.gps.active && state.gps.lat !== null) distTxt = fmtDist(distanceM(state.gps.lat, state.gps.lon, f.lat, f.lon));
+      btn.innerHTML =
+        '<div class="itemTop"><span class="itemName">' + escHtml(f.name) + "</span>" +
+        '<span class="itemDist">' + distTxt + "</span></div>" +
+        '<div class="itemSub">' + escHtml(sub.join(" · ")) + "</div>";
+      btn.addEventListener("click", function () { selectFacility(f.id); });
+      li.appendChild(btn);
+
+      var sBtn = document.createElement("button");
+      sBtn.type = "button"; sBtn.className = "itemBtn share";
+      sBtn.setAttribute("aria-label", f.name + " 공유");
+      sBtn.textContent = "\u21AA";
+      sBtn.addEventListener("click", function (ev) { ev.stopPropagation(); openSheet(f); });
+      li.appendChild(sBtn);
+
+      var eBtn = document.createElement("button");
+      eBtn.type = "button"; eBtn.className = "itemBtn edit"; eBtn.setAttribute("aria-label", f.name + " 이름·메모 수정");
+      eBtn.textContent = "✎";
+      eBtn.addEventListener("click", function (ev) { ev.stopPropagation(); state.editingId = f.id; renderList(); });
+      li.appendChild(eBtn);
+
+      var dBtn = document.createElement("button");
+      dBtn.type = "button"; dBtn.className = "itemBtn del"; dBtn.setAttribute("aria-label", f.name + " 삭제");
+      dBtn.textContent = "✕";
+      dBtn.addEventListener("click", function (ev) { ev.stopPropagation(); deleteFacility(f.id); });
+      li.appendChild(dBtn);
+
+      ul.appendChild(li);
+    });
+  }
+
+  function escHtml(s) {
+    return String(s === null || s === undefined ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  var escAttr = escHtml;
+
+  /* ===================================================================
+     5. GPS · 거리·방향
+     =================================================================== */
+
+  function gpsSupported() {
+    return !!(navigator.geolocation && navigator.geolocation.watchPosition);
+  }
+
+  function geoErrText(err) {
+    if (!err) return "위치를 확인하지 못했습니다.";
+    if (err.code === 1) {
+      return "위치 권한이 거부되었습니다. 브라우저 주소창 옆 설정에서 이 페이지의 위치를 허용해 주세요. " +
+             "파일로 열었을 때는 권한 창이 뜨지 않는 경우가 있습니다. 그때는 아래 지도 길찾기 버튼을 쓰면 지도 앱이 대신 현재 위치를 잡습니다.";
+    }
+    if (err.code === 2) {
+      return "현재 위치를 잡지 못했습니다. 하늘이 보이는 곳에서 잠시 기다리거나, 아래 길찾기 버튼을 이용하세요.";
+    }
+    return "위치 확인 시간이 초과되었습니다. 다시 시도해 주세요.";
+  }
+
+  function startGps() {
+    if (!gpsSupported()) {
+      state.gps.err = "이 브라우저는 위치 기능을 지원하지 않습니다. 지도 앱 길찾기 버튼을 이용해 주세요.";
+      state.gps.active = false;
+      updateGpsView();
+      return;
+    }
+    if (state.gps.watch !== null) { try { navigator.geolocation.clearWatch(state.gps.watch); } catch (e) {} }
+    state.gps.active = true;
+    state.gps.err = null;
+    state.gps.waiting = true;
+    updateGpsView();
+    try {
+      state.gps.watch = navigator.geolocation.watchPosition(onPos, onGpsErr, {
+        enableHighAccuracy: true, maximumAge: 1000, timeout: 20000
+      });
+    } catch (e) {
+      state.gps.active = false;
+      state.gps.err = geoErrText(e);
+      updateGpsView();
+    }
+  }
+
+  function stopGps() {
+    if (state.gps.watch !== null) {
+      try { navigator.geolocation.clearWatch(state.gps.watch); } catch (e) {}
+      state.gps.watch = null;
+    }
+    state.gps.active = false;
+    state.gps.waiting = false;
+  }
+
+  var lastRender = 0, pendingRender = null;
+  function onPos(pos) {
+    var g = state.gps;
+    g.lat = pos.coords.latitude;
+    g.lon = pos.coords.longitude;
+    g.acc = pos.coords.accuracy;
+    g.at = pos.timestamp || Date.now();
+    g.waiting = false;
+    g.err = null;
+    var now = Date.now();
+    if (now - lastRender > 700) { lastRender = now; updateGpsView(); renderList(); }
+    else if (!pendingRender) {
+      pendingRender = setTimeout(function () { pendingRender = null; lastRender = Date.now(); updateGpsView(); renderList(); }, 700);
+    }
+  }
+
+  function onGpsErr(err) {
+    var g = state.gps;
+    g.err = geoErrText(err);
+    if (err && err.code === 1) { stopGps(); g.err = geoErrText(err); }
+    g.waiting = false;
+    updateGpsView();
+  }
+
+  function updateGpsView() {
+    var g = state.gps;
+    els.gpsDot.className = "dot" + (g.err ? " err" : (g.active && g.lat !== null ? " on" : ""));
+
+    if (g.err) {
+      els.gpsTitle.textContent = "위치를 켤 수 없습니다";
+      els.gpsAcc.textContent = "";
+      els.gpsMsg.textContent = g.err;
+      els.gpsMsg.classList.add("err");
+      els.gpsBtn.textContent = "다시 시도";
+      els.gpsCoord.textContent = "";
+    } else if (g.active && g.lat !== null) {
+      var age = Math.max(0, Math.round((Date.now() - g.at) / 1000));
+      els.gpsTitle.textContent = "현재 위치 확인됨";
+      els.gpsAcc.textContent = "정확도 ±" + Math.round(g.acc || 0) + " m";
+      els.gpsMsg.classList.remove("err");
+      els.gpsMsg.textContent = (g.acc && g.acc > 30)
+        ? "정확도가 낮습니다(±" + Math.round(g.acc) + " m). 하늘이 트인 곳에서 잠시 기다리면 좋아집니다."
+        : "이동하면 거리와 방향이 계속 갱신됩니다.";
+      els.gpsBtn.textContent = "위치 끄기";
+      els.gpsCoord.textContent = fmt(g.lat, 7) + ", " + fmt(g.lon, 7) + " · " + age + "초 전";
+    } else if (g.active) {
+      els.gpsTitle.textContent = "위치 확인 중…";
+      els.gpsAcc.textContent = "";
+      els.gpsMsg.classList.remove("err");
+      els.gpsMsg.textContent = "GPS 신호를 기다리고 있습니다. 잠시만요.";
+      els.gpsBtn.textContent = "취소";
+      els.gpsCoord.textContent = "";
+    } else {
+      els.gpsTitle.textContent = "현재 위치 꺼짐";
+      els.gpsAcc.textContent = "";
+      els.gpsMsg.classList.remove("err");
+      els.gpsMsg.textContent = "위치를 켜면 서 있는 자리에서 선택한 시설까지의 거리와 방향을 보여 줍니다.";
+      els.gpsBtn.textContent = "현재 위치 켜기";
+      els.gpsCoord.textContent = "";
+    }
+
+    updateDistance();
+  }
+
+  function updateDistance() {
+    var g = state.gps, c = state.current;
+    var box = els.distBox;
+    if (!c) return;
+
+    if (g.active && g.lat !== null) {
+      var d = distanceM(g.lat, g.lon, c.lat, c.lon);
+      var b = bearingDeg(g.lat, g.lon, c.lat, c.lon);
+      box.classList.remove("off");
+      els.arrow.style.transform = "rotate(" + b.toFixed(1) + "deg)";
+      els.distMain.textContent = fmtDist(d);
+      els.distDir.textContent = d < 1 ? "지금 서 있는 자리" : dirName(b) + "쪽 " + Math.round(b) + "\u00B0";
+      var acc = g.acc ? Math.round(g.acc) : null;
+      var age = Math.max(0, Math.round((Date.now() - g.at) / 1000));
+      var note = "GPS 정확도 " + (acc === null ? "-" : "±" + acc + " m") + " · " + age + "초 전";
+      if (d <= Math.max(15, (acc || 0) * 1.5)) note = "거의 도착했습니다 · " + note;
+      els.distSub.textContent = note;
+    } else {
+      box.classList.add("off");
+      els.arrow.style.transform = "rotate(0deg)";
+      els.distMain.textContent = "거리 확인 전";
+      els.distDir.textContent = "";
+      els.distSub.textContent = g.err
+        ? "위치를 켤 수 없습니다. 위의 길찾기 버튼으로 지도 앱에서 확인하세요."
+        : "지금은 위치가 꺼져 있습니다. 위에서 [현재 위치 켜기]를 눌러 주세요.";
+    }
+  }
+
+  /* ===================================================================
+     6. 백업 · 불러오기
+     =================================================================== */
+
+  function downloadFile(name, text, mime) {
+    try {
+      var blob = new Blob([text], { type: mime + ";charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1500);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function stamp() {
+    var d = new Date();
+    return d.getFullYear() + ("0" + (d.getMonth() + 1)).slice(-2) + ("0" + d.getDate()).slice(-2);
+  }
+
+  function exportJson() {
+    var list = loadFacilities();
+    if (!list.length) { toast("저장한 시설이 없습니다."); return; }
+    var payload = { app: "grs80-facility-viewer", version: 1, exportedAt: new Date().toISOString(), facilities: list };
+    var ok = downloadFile("초기우수시설_" + stamp() + ".json", JSON.stringify(payload, null, 2), "application/json");
+    toast(ok ? "백업 파일을 저장했습니다." : "파일 저장이 막혔습니다. 브라우저에서 다운로드를 허용해 주세요.");
+  }
+
+  function csvCell(v) {
+    var s = (v === null || v === undefined) ? "" : String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function exportCsv() {
+    var list = loadFacilities();
+    if (!list.length) { toast("저장한 시설이 없습니다."); return; }
+    var head = ["시설명", "현장메모", "좌표계", "동거E", "북거N", "표고Z", "위도", "경도", "등록일시"];
+    var rows = [head.join(",")];
+    list.forEach(function (f) {
+      rows.push([
+        csvCell(f.name), csvCell(f.memo || ""), csvCell(f.code),
+        csvCell(f.E === null || f.E === undefined ? "" : fmt(f.E, 3)),
+        csvCell(f.N === null || f.N === undefined ? "" : fmt(f.N, 3)),
+        csvCell(f.z === null || f.z === undefined ? "" : fmt(f.z, 2)),
+        fmt(f.lat, 7), fmt(f.lon, 7),
+        csvCell(new Date(f.createdAt || Date.now()).toLocaleString("ko-KR"))
+      ].join(","));
+    });
+    var ok = downloadFile("초기우수시설_" + stamp() + ".csv", "\uFEFF" + rows.join("\r\n"), "text/csv");
+    toast(ok ? "CSV 파일을 저장했습니다. 엑셀에서 열 수 있습니다." : "파일 저장이 막혔습니다.");
+  }
+
+  function parseCsv(text) {
+    var rows = [], row = [], cur = "", q = false;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text[i];
+      if (q) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { cur += '"'; i++; } else { q = false; }
+        } else { cur += ch; }
+      } else if (ch === '"') { q = true; }
+      else if (ch === ",") { row.push(cur); cur = ""; }
+      else if (ch === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+      else if (ch === "\r") { /* skip */ }
+      else { cur += ch; }
+    }
+    if (cur.length || row.length) { row.push(cur); rows.push(row); }
+    return rows.filter(function (r) { return r.length && r.join("").trim() !== ""; });
+  }
+
+  function importText(text, fileName) {
+    var incoming = [];
+    var t = text.replace(/^\uFEFF/, "").trim();
+    if (t.charAt(0) === "{" || t.charAt(0) === "[") {
+      var obj = JSON.parse(t);
+      var arr = Array.isArray(obj) ? obj : (obj.facilities || []);
+      arr.forEach(function (f) {
+        var lat = Number(f.lat), lon = Number(f.lon);
+        if (isFinite(lat) && isFinite(lon)) {
+          incoming.push({
+            id: f.id || newId(), name: f.name || "이름 없음", memo: f.memo || "",
+            code: f.code || "GEO", E: f.E === undefined ? null : f.E, N: f.N === undefined ? null : f.N,
+            z: f.z === undefined ? null : f.z, swapped: !!f.swapped,
+            lat: lat, lon: lon, createdAt: f.createdAt || Date.now()
+          });
+        }
+      });
+    } else {
+      var rows = parseCsv(t);
+      if (!rows.length) throw new Error("empty");
+      var start = 0;
+      if (/시설명|name/i.test(rows[0].join(","))) start = 1;
+      for (var i = start; i < rows.length; i++) {
+        var r = rows[i];
+        var lat = parseFloat(r[6]), lon = parseFloat(r[7]);
+        if (!isFinite(lat) || !isFinite(lon)) continue;
+        incoming.push({
+          id: newId(), name: r[0] || "이름 없음", memo: r[1] || "", code: r[2] || "GEO",
+          E: isFinite(parseFloat(r[3])) ? parseFloat(r[3]) : null,
+          N: isFinite(parseFloat(r[4])) ? parseFloat(r[4]) : null,
+          z: (r[5] === "" || r[5] === undefined || !isFinite(parseFloat(r[5]))) ? null : parseFloat(r[5]),
+          swapped: false, lat: lat, lon: lon, createdAt: Date.now()
+        });
+      }
+    }
+    if (!incoming.length) { toast("불러올 시설을 찾지 못했습니다."); return; }
+
+    var list = loadFacilities();
+    var added = 0;
+    incoming.forEach(function (f) {
+      var same = false;
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].id === f.id ||
+            (Math.abs(list[i].lat - f.lat) < 1e-7 && Math.abs(list[i].lon - f.lon) < 1e-7 &&
+             (list[i].name || "") === (f.name || ""))) { same = true; break; }
+      }
+      if (!same) { list.push(f); added++; }
+    });
+    saveFacilities(list);
+    renderList();
+    toast("불러오기 완료 · 새로 " + added + "곳 (건너뜀 " + (incoming.length - added) + ")");
+  }
+
+  /* ===================================================================
+     7. 초기화 · 이벤트
+     =================================================================== */
+
+  function init() {
+    els.crs = $("crs");
+    els.inX = $("inX"); els.inY = $("inY"); els.inZ = $("inZ");
+    els.inName = $("inName"); els.inMemo = $("inMemo");
+    els.lblX = $("lblX"); els.lblY = $("lblY");
+    els.crsHint = $("crsHint");
+    els.paste = $("paste");
+    els.swapBtn = $("swapBtn"); els.swapState = $("swapState");
+    els.err = $("err"); els.warn = $("warn");
+    els.addCard = $("addCard"); els.addState = $("addState");
+
+    els.targetCard = $("targetCard");
+    els.targetEmpty = $("targetEmpty"); els.targetBody = $("targetBody");
+    els.tBadges = $("tBadges"); els.tName = $("tName"); els.tMemo = $("tMemo");
+    els.tLat = $("tLat"); els.tLon = $("tLon"); els.tDms = $("tDms"); els.tMeta = $("tMeta");
+    els.distBox = $("distBox"); els.arrow = $("arrow");
+    els.distMain = $("distMain"); els.distDir = $("distDir"); els.distSub = $("distSub");
+    els.lnkKakaoMap = $("lnkKakaoMap"); els.lnkNaverMap = $("lnkNaverMap");
+    els.lnkKakaoTo = $("lnkKakaoTo"); els.lnkNaverTo = $("lnkNaverTo");
+    els.saveRow = $("saveRow"); els.manageRow = $("manageRow");
+    els.altBox = $("altBox"); els.altList = $("altList");
+
+    els.facList = $("facList"); els.listEmpty = $("listEmpty"); els.listCard = $("listCard");
+    els.listCount = $("listCount"); els.sortBtn = $("sortBtn"); els.clearAllBtn = $("clearAllBtn");
+
+    els.gpsDot = $("gpsDot"); els.gpsTitle = $("gpsTitle"); els.gpsAcc = $("gpsAcc");
+    els.gpsMsg = $("gpsMsg"); els.gpsCoord = $("gpsCoord"); els.gpsBtn = $("gpsBtn");
+
+    loadSettings();
+    buildCrsSelect();
+    refreshMode();
+    renderList();
+    updateGpsView();
+
+    if (!loadFacilities().length) {
+      els.addCard.open = true;
+      els.addState.textContent = "먼저 등록";
+    }
+
+    if (!storageOk) {
+      els.listEmpty.innerHTML = "이 브라우저에서는 기록 저장이 막혀 있어, 이번 화면에서만 목록이 유지됩니다. " +
+        "파일을 다른 브라우저로 열거나 백업 파일로 보관하세요.";
+      els.listEmpty.classList.remove("hidden");
+    }
+
+    els.crs.addEventListener("change", function () {
+      settings.crs = els.crs.value; saveSettings();
+      state.swapped = false; clearErr(); showWarn("");
+      refreshMode();
+    });
+
+    $("coordForm").addEventListener("submit", function (ev) { ev.preventDefault(); doConvert(false); });
+
+    $("goSaveBtn").addEventListener("click", function () { doConvert(true); });
+
+    els.swapBtn.addEventListener("click", function () {
+      var a = els.inX.value;
+      els.inX.value = els.inY.value;
+      els.inY.value = a;
+      state.swapped = !state.swapped;
+      renderOrderLabels();
+    });
+
+    function fillFromPaste() {
+      var p = parseCoords(els.paste.value);
+      if (!isFinite(p.x) || !isFinite(p.y)) {
+        showErr("숫자 두 개 이상을 찾지 못했습니다. 예: X = 201234.56  Y = 543210.12  Z = 34.56");
+        return;
+      }
+      clearErr(); showWarn("");
+      els.inX.value = String(p.x);
+      els.inY.value = String(p.y);
+      els.inZ.value = isFinite(p.z) ? String(p.z) : "";
+      doConvert(false);
+      toast(p.labeled ? "X·Y·Z 라벨을 읽어 넣었습니다." : "숫자를 순서대로 넣었습니다.");
+    }
+    $("pasteBtn").addEventListener("click", fillFromPaste);
+    els.paste.addEventListener("paste", function () {
+      setTimeout(function () {
+        var p = parseCoords(els.paste.value);
+        if (isFinite(p.x) && isFinite(p.y)) fillFromPaste();
+      }, 0);
+    });
+    els.paste.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter") { ev.preventDefault(); fillFromPaste(); }
+    });
+
+    els.gpsBtn.addEventListener("click", function () {
+      if (state.gps.active) { stopGps(); updateGpsView(); renderList(); }
+      else { startGps(); }
+    });
+
+    $("gpsSaveBtn").addEventListener("click", function () {
+      if (!(state.gps.active && state.gps.lat !== null)) {
+        toast(state.gps.active ? "GPS 신호를 기다리는 중입니다. 조금 뒤에 다시 눌러 주세요." : "먼저 현재 위치를 켜 주세요.");
+        if (!state.gps.active) startGps();
+        return;
+      }
+      var g = state.gps;
+      var name = (els.inName.value || "").trim() || guessName();
+      var memo = (els.inMemo.value || "").trim() || ("현재 위치에서 등록 · 정확도 ±" + Math.round(g.acc || 0) + " m");
+      var list = loadFacilities();
+      list.unshift({
+        id: newId(), name: name, memo: memo, code: "GEO",
+        E: null, N: null, z: null, swapped: false,
+        lat: g.lat, lon: g.lon, createdAt: Date.now()
+      });
+      saveFacilities(list);
+      els.inName.value = ""; els.inMemo.value = "";
+      els.addState.textContent = "";
+      renderList();
+      toast("\"" + name + "\" 저장 완료 (현재 위치)");
+    });
+
+    $("saveBtn").addEventListener("click", saveCurrent);
+
+    $("editBtn").addEventListener("click", function () {
+      if (state.current && state.current.id) { state.editingId = state.current.id; renderList(); els.listCard.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    });
+
+    $("coordCopyBtn").addEventListener("click", function () {
+      if (!state.current) return;
+      copyText(fmt(state.current.lat, 7) + ", " + fmt(state.current.lon, 7), "위도·경도를 복사했습니다.");
+    });
+
+    els.sortBtn.addEventListener("click", function () {
+      settings.sort = settings.sort === "name" ? "dist" : "name";
+      saveSettings();
+      renderList();
+    });
+
+    $("exportJsonBtn").addEventListener("click", exportJson);
+    $("exportCsvBtn").addEventListener("click", exportCsv);
+    $("importInput").addEventListener("change", function (ev) {
+      var file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        try { importText(String(reader.result), file.name); }
+        catch (e) { toast("파일을 읽지 못했습니다. JSON 또는 CSV 파일인지 확인해 주세요."); }
+        ev.target.value = "";
+      };
+      reader.onerror = function () { toast("파일을 읽지 못했습니다."); ev.target.value = ""; };
+      reader.readAsText(file, "utf-8");
+    });
+
+    els.clearAllBtn.addEventListener("click", function () {
+      var n = loadFacilities().length;
+      if (!confirm("저장한 시설 " + n + "곳을 모두 지웁니다.\n먼저 [백업 저장]으로 파일을 남겨 두는 것이 안전합니다.\n계속할까요?")) return;
+      saveFacilities([]);
+      setCurrent(null);
+      renderList();
+      toast("모두 지웠습니다.");
+    });
+
+    $("shareNativeBtn").addEventListener("click", function () { if (state.current) nativeShare(state.current); });
+    $("shareTextBtn").addEventListener("click", function () { if (state.current) copyShareText(state.current); });
+    $("copyKakaoBtn").addEventListener("click", function () { if (state.current) copyKakao(state.current); });
+    $("copyNaverBtn").addEventListener("click", function () { if (state.current) copyNaver(state.current); });
+    $("copyPageBtn").addEventListener("click", function () { if (state.current) copyPageLink(state.current); });
+    if (!navigator.share) {
+      $("shareNativeBtn").classList.add("hidden");
+      $("shareTextBtn").classList.add("wide");
+    }
+    if (!/^https?:$/.test(location.protocol)) $("copyPageBtn").classList.add("hidden");
+
+    $("sheetClose").addEventListener("click", closeSheet);
+    $("sheetBackdrop").addEventListener("click", closeSheet);
+    $("sheetShare").addEventListener("click", function () { if (shareTarget) nativeShare(shareTarget); });
+    $("sheetText").addEventListener("click", function () { if (shareTarget) copyShareText(shareTarget); });
+    $("sheetKakao").addEventListener("click", function () { if (shareTarget) copyKakao(shareTarget); });
+    $("sheetNaver").addEventListener("click", function () { if (shareTarget) copyNaver(shareTarget); });
+    $("sheetPage").addEventListener("click", function () { if (shareTarget) copyPageLink(shareTarget); });
+    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") closeSheet(); });
+
+    applyUrlParams();
+
+    setInterval(function () { if (state.gps.active && state.gps.lat !== null) updateDistance(); }, 5000);
+  }
+
+  function copyText(text, okMsg) {
+    var done = function (ok) { toast(ok ? okMsg : "복사가 막혀 있습니다. 값을 길게 눌러 직접 복사해 주세요."); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(legacyCopy(text)); });
+    } else { done(legacyCopy(text)); }
+  }
+  function legacyCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", "");
+    ta.style.position = "fixed"; ta.style.top = "-1000px"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+</body>
+</html>
