@@ -339,6 +339,57 @@
     background:linear-gradient(180deg,#12996a,#0d7d55); box-shadow:0 8px 18px rgba(15,138,95,.24); letter-spacing:-.01em;}
   .lockGo:active{transform:translateY(1px);}
   .lockCard p.lockUrl{font-size:11px; color:#8d97a2; margin:12px 0 0; word-break:break-all; line-height:1.45; overflow-wrap:anywhere;}
+
+  /* ---------- 시설 사진 ---------- */
+  .photoBlock{margin-top:13px; padding-top:12px; border-top:1px dashed var(--line);}
+  .photoBlock.flat{margin-top:0; padding-top:0; border-top:0;}
+  .photoHead{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px;}
+  .photoHead .lbl{margin:0;}
+  .photoHead .lbl em{font-style:normal; font-weight:600; color:var(--muted);}
+  .photoCount{font-size:11.5px; font-weight:800; color:var(--muted); font-variant-numeric:tabular-nums; flex:0 0 auto;}
+  .photoRow{display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start;}
+  .photoRow .hint{margin:0; padding:6px 0 0; flex:1 1 100%;}
+  .photoPick{
+    position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:12px 14px; font-size:13px; font-weight:800; color:var(--accent-dark);
+    background:var(--accent-soft); border:1px dashed #bfe2d3; border-radius:12px; width:100%; text-align:center;
+  }
+  .photoPick:active{background:#dff1e8;}
+  .photoPick input[type=file]{position:absolute; inset:0; opacity:0; font-size:100px; cursor:pointer;}
+  .photoPick.busy{opacity:.55;}
+  .thumb{position:relative; flex:0 0 auto; line-height:0;}
+  .thumb img{display:block; width:76px; height:76px; object-fit:cover; border-radius:10px; border:1px solid var(--line); background:#f2f5f8; cursor:pointer;}
+  .thumb .x{
+    position:absolute; top:-7px; right:-7px; width:23px; height:23px; padding:0; border-radius:50%;
+    border:1px solid #d7dde4; background:#fff; color:#5a6672; font-size:11px; font-weight:800; line-height:1;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(18,24,31,.18);
+  }
+  .thumb .x:active{background:var(--danger-soft); color:var(--danger);}
+  .thumb.sm img{width:32px; height:32px; border-radius:8px;}
+  .thumb.sm .x{display:none;}
+  .itemPhotos{display:flex; align-items:center; gap:4px; margin-top:5px; flex-wrap:wrap;}
+  .spaceInfo{margin:2px 0 6px; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .spaceInfo.near{color:var(--warn); font-weight:700;}
+  .tPhotos{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .tPhotos .thumb img{width:84px; height:84px;}
+
+  /* 사진 크게 보기(라이트박스) */
+  .lbWrap{position:fixed; inset:0; z-index:90; display:flex; flex-direction:column; background:rgba(9,13,18,.94);}
+  .lbStage{flex:1 1 auto; min-height:0; display:flex; align-items:center; justify-content:center; padding:56px 12px 6px;}
+  .lbStage img{max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; background:#0b0f14;}
+  .lbClose{
+    position:absolute; top:calc(10px + env(safe-area-inset-top)); right:12px; width:42px; height:42px;
+    border-radius:50%; border:0; background:rgba(255,255,255,.16); color:#fff; font-size:16px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; padding:0;
+  }
+  .lbClose:active{background:rgba(255,255,255,.3);}
+  .lbBar{display:flex; align-items:center; justify-content:center; gap:14px; padding:8px 12px calc(14px + env(safe-area-inset-bottom));}
+  .lbBar button{
+    width:48px; height:42px; border-radius:12px; border:1px solid rgba(255,255,255,.22);
+    background:rgba(255,255,255,.1); color:#fff; font-size:19px; font-weight:800; line-height:1;
+  }
+  .lbBar button:disabled{opacity:.3;}
+  .lbBar span{color:#e6ebf1; font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; min-width:48px; text-align:center;}
 </style>
 </head>
 <body>
@@ -390,6 +441,7 @@
       <div class="badges" id="tBadges"></div>
       <h2 class="facName" id="tName"></h2>
       <p class="facMemo" id="tMemo"></p>
+      <div class="tPhotos hidden" id="tPhotos"></div>
 
       <div class="distBox off" id="distBox">
         <div class="arrowWrap"><div class="arrow" id="arrow">↑</div></div>
@@ -455,6 +507,7 @@
       </span>
     </div>
     <div class="chips" id="folderChips"></div>
+    <p class="spaceInfo" id="spaceInfo"></p>
     <ul class="histList" id="facList"></ul>
     <div class="emptyBox hidden" id="listEmpty">저장한 시설이 없습니다. 아래 <b>새 시설 추가</b>에서 등록하세요.</div>
     <div style="text-align:right; margin-top:6px;">
@@ -558,6 +611,18 @@
           </div>
         </div>
 
+        <div class="photoBlock">
+          <div class="photoHead">
+            <span class="lbl">현장 사진 <em>(선택 · 최대 3장)</em></span>
+            <span class="photoCount" id="addPhotoCount">0/3</span>
+          </div>
+          <div class="photoRow" id="addPhotoRow"></div>
+          <label class="photoPick" id="addPhotoPick" style="margin-top:8px;">📷 사진 찍기 · 고르기
+            <input type="file" id="addPhotos" accept="image/*" multiple aria-label="현장 사진 넣기">
+          </label>
+          <p class="hint">사진은 자동으로 줄여서(긴 변 800px) 이 브라우저에만 저장합니다. 사진을 누르면 크게 볼 수 있습니다.</p>
+        </div>
+
         <div style="display:grid; gap:7px; margin-top:13px;">
           <button type="submit" class="primary" id="goBtn">좌표 확인 · 지도 보기</button>
           <button type="button" class="ghost" id="goSaveBtn" style="width:100%; padding:14px;">확인하고 바로 저장</button>
@@ -621,6 +686,16 @@
       <button type="button" id="moveSheetClose">닫기</button>
     </div>
     <div class="moveList" id="moveList"></div>
+  </div>
+</div>
+
+<div class="lbWrap hidden" id="lbWrap" role="dialog" aria-modal="true" aria-label="사진 크게 보기">
+  <button type="button" class="lbClose" id="lbClose" aria-label="사진 크게 보기 닫기">✕</button>
+  <div class="lbStage" id="lbStage"><img id="lbImg" alt="시설 사진"></div>
+  <div class="lbBar">
+    <button type="button" id="lbPrev" aria-label="이전 사진">‹</button>
+    <span id="lbCount">1 / 1</span>
+    <button type="button" id="lbNext" aria-label="다음 사진">›</button>
   </div>
 </div>
 
@@ -867,6 +942,7 @@
   var KEY_F = "grs80.facilities.v1";
   var KEY_S = "grs80.settings.v1";
   var storageOk = true;
+  var lastWriteQuota = false;
   var memFacilities = [];
   var settings = { crs: "EPSG:5186", sort: "name" };
 
@@ -874,10 +950,25 @@
     try { return window.localStorage.getItem(key); }
     catch (e) { storageOk = false; return null; }
   }
+
+  /* 저장 공간(약 5MB)이 꽉 차서 생기는 오류인지 구분한다 */
+  function isQuotaError(e) {
+    if (!e) return false;
+    var n = String(e.name || "");
+    return n === "QuotaExceededError" || n === "NS_ERROR_DOM_QUOTA_REACHED" ||
+           e.code === 22 || e.code === 1014 || /quota/i.test(n);
+  }
+
+  var QUOTA_MSG = "저장 공간이 부족해 사진을 더 넣을 수 없습니다. 백업 저장으로 파일을 남긴 뒤 사진이 많은 시설을 정리해 주세요.";
+
   function writeLS(key, val) {
-    if (!storageOk) return;
-    try { window.localStorage.setItem(key, val); }
-    catch (e) { storageOk = false; }
+    lastWriteQuota = false;
+    try { window.localStorage.setItem(key, val); return true; }
+    catch (e) {
+      if (isQuotaError(e)) lastWriteQuota = true;
+      else storageOk = false;
+      return false;
+    }
   }
 
   function loadFacilities() {
@@ -892,9 +983,24 @@
     } catch (e) { return []; }
   }
 
-  function saveFacilities(arr) {
+  /* 사진은 시설 레코드의 photos 배열(dataURL)에 담는다. 없거나 잘못된 값은 조용히 건너뛴다. */
+  function photosOf(f) {
+    if (!f || !Array.isArray(f.photos)) return [];
+    var out = [];
+    for (var i = 0; i < f.photos.length && out.length < PHOTO_MAX; i++) {
+      var p = f.photos[i];
+      if (typeof p === "string" && /^data:image\//.test(p)) out.push(p);
+    }
+    return out;
+  }
+
+  function saveFacilities(arr, opt) {
     memFacilities = arr;
-    writeLS(KEY_F, JSON.stringify(arr));
+    var ok = writeLS(KEY_F, JSON.stringify(arr));
+    if (!ok && !(opt && opt.quiet)) {
+      toast(lastWriteQuota ? QUOTA_MSG : "이 브라우저에 저장하지 못했습니다. 저장 공간을 확인해 주세요.", 4200);
+    }
+    return ok;
   }
 
   /* ---------- 폴더(현장) 저장소 ---------- */
@@ -959,6 +1065,191 @@
   function saveSettings() { writeLS(KEY_S, JSON.stringify(settings)); }
 
   /* ===================================================================
+     3-2. 시설 사진 — 폰 사진을 canvas로 줄여서 저장
+     =================================================================== */
+
+  var PHOTO_MAX = 3;          /* 시설당 최대 장수 */
+  var PHOTO_EDGE = 800;       /* 긴 변 최대 길이(px) */
+  var PHOTO_Q = 0.72;         /* JPEG 품질 */
+
+  /* file → dataURL(JPEG). 실패하면 reject. */
+  function compressPhoto(file) {
+    return new Promise(function (resolve, reject) {
+      if (!file || !/^image\//i.test(file.type || "")) {
+        reject(new Error("not-image")); return;
+      }
+      var url = null;
+      var draw = function (src, w0, h0) {
+        try {
+          var scale = Math.min(1, PHOTO_EDGE / Math.max(w0 || 1, h0 || 1));
+          var w = Math.max(1, Math.round((w0 || 1) * scale));
+          var h = Math.max(1, Math.round((h0 || 1) * scale));
+          var cv = document.createElement("canvas");
+          cv.width = w; cv.height = h;
+          var cx = cv.getContext("2d");
+          cx.fillStyle = "#ffffff";
+          cx.fillRect(0, 0, w, h);
+          cx.drawImage(src, 0, 0, w, h);
+          var out = cv.toDataURL("image/jpeg", PHOTO_Q);
+          /* 장당 150KB(데이터 길이 약 20만자)를 넘으면 품질을 조금씩 낮춰 다시 만든다 */
+          var q = PHOTO_Q;
+          while (out.length > 200000 && q > 0.36) {
+            q -= 0.08;
+            out = cv.toDataURL("image/jpeg", q);
+          }
+          resolve(out);
+        } catch (e) { reject(e); }
+      };
+      var fallback = function () {
+        var img = new Image();
+        img.onload = function () {
+          draw(img, img.naturalWidth, img.naturalHeight);
+          if (url) URL.revokeObjectURL(url);
+        };
+        img.onerror = function () { if (url) URL.revokeObjectURL(url); reject(new Error("decode")); };
+        url = URL.createObjectURL(file);
+        img.src = url;
+      };
+      if (window.createImageBitmap) {
+        try {
+          createImageBitmap(file, { imageOrientation: "from-image" }).then(function (bmp) {
+            draw(bmp, bmp.width, bmp.height);
+            if (bmp.close) bmp.close();
+          }, fallback);
+        } catch (e) { fallback(); }
+      } else { fallback(); }
+    });
+  }
+
+  /* 고른 파일들을 순서대로 압축해 list 에 채운다. 다 끝나면 after() */
+  function addPhotoFiles(files, list, after) {
+    var arr = [];
+    for (var i = 0; i < (files ? files.length : 0); i++) arr.push(files[i]);
+    if (!arr.length) return Promise.resolve();
+    var room = PHOTO_MAX - list.length;
+    if (room <= 0) {
+      toast("사진은 시설당 " + PHOTO_MAX + "장까지 넣을 수 있습니다. 하나를 지우고 넣어 주세요.");
+      return Promise.resolve();
+    }
+    if (arr.length > room) {
+      toast("사진은 최대 " + PHOTO_MAX + "장이라 " + room + "장만 넣었습니다.");
+      arr = arr.slice(0, room);
+    }
+    var bad = 0;
+    var chain = Promise.resolve();
+    arr.forEach(function (file) {
+      chain = chain.then(function () {
+        return compressPhoto(file).then(function (src) {
+          if (src) list.push(src);
+        }, function () { bad++; });
+      });
+    });
+    return chain.then(function () {
+      if (bad && bad === arr.length) toast("사진을 읽지 못했습니다. 다른 사진으로 해 보세요.");
+      else if (bad) toast("사진 " + bad + "장은 읽지 못했습니다.");
+      if (typeof after === "function") after();
+    });
+  }
+
+  /* 썸네일 줄 그리기. opt = { small, onRemove, onOpen } */
+  function renderThumbs(box, arr, opt) {
+    opt = opt || {};
+    box.innerHTML = "";
+    for (var i = 0; i < arr.length; i++) {
+      (function (idx) {
+        var d = document.createElement("div");
+        d.className = "thumb" + (opt.small ? " sm" : "");
+        var img = document.createElement("img");
+        img.src = arr[idx];
+        img.alt = "사진 " + (idx + 1);
+        img.setAttribute("draggable", "false");
+        img.addEventListener("click", function (ev) {
+          ev.stopPropagation(); ev.preventDefault();
+          if (opt.onOpen) opt.onOpen(idx);
+        });
+        d.appendChild(img);
+        if (opt.onRemove) {
+          var x = document.createElement("button");
+          x.type = "button"; x.className = "x";
+          x.setAttribute("aria-label", "사진 " + (idx + 1) + " 삭제");
+          x.textContent = "✕";
+          x.addEventListener("click", function (ev) {
+            ev.stopPropagation(); ev.preventDefault();
+            opt.onRemove(idx);
+          });
+          d.appendChild(x);
+        }
+        box.appendChild(d);
+      })(i);
+    }
+  }
+
+  /* ---------- 사진 크게 보기 ---------- */
+  var lb = { photos: [], i: 0 };
+
+  function openLightbox(arr, idx) {
+    var list = [];
+    for (var i = 0; i < (arr ? arr.length : 0); i++) if (typeof arr[i] === "string") list.push(arr[i]);
+    if (!list.length) return;
+    lb.photos = list;
+    lb.i = Math.max(0, Math.min(idx || 0, list.length - 1));
+    paintLightbox();
+    var wrap = $("lbWrap");
+    if (wrap) wrap.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
+
+  function paintLightbox() {
+    if (!lb.photos.length) return;
+    $("lbImg").src = lb.photos[lb.i];
+    $("lbCount").textContent = (lb.i + 1) + " / " + lb.photos.length;
+    $("lbPrev").disabled = lb.i <= 0;
+    $("lbNext").disabled = lb.i >= lb.photos.length - 1;
+  }
+
+  function stepLightbox(d) {
+    var n = lb.i + d;
+    if (n < 0 || n >= lb.photos.length) return;
+    lb.i = n;
+    paintLightbox();
+  }
+
+  function closeLightbox() {
+    var wrap = $("lbWrap");
+    if (!wrap || wrap.classList.contains("hidden")) return;
+    wrap.classList.add("hidden");
+    var img = $("lbImg");
+    if (img) img.removeAttribute("src");
+    document.body.style.overflow = "";
+  }
+
+  /* ---------- 새 시설 추가 폼의 사진 ---------- */
+  var addPhotos = [];
+
+  function refreshAddPhotos() {
+    var row = $("addPhotoRow"), cnt = $("addPhotoCount"), pick = $("addPhotoPick");
+    if (!row) return;
+    row.innerHTML = "";
+    renderThumbs(row, addPhotos, {
+      onRemove: function (i) { addPhotos.splice(i, 1); refreshAddPhotos(); },
+      onOpen: function (i) { openLightbox(addPhotos, i); }
+    });
+    if (!addPhotos.length) {
+      var e = document.createElement("p");
+      e.className = "hint";
+      e.textContent = "사진을 넣으면 목록과 위치 카드에서 바로 볼 수 있습니다.";
+      row.appendChild(e);
+    }
+    if (cnt) cnt.textContent = addPhotos.length + "/" + PHOTO_MAX;
+    if (pick) pick.classList.toggle("hidden", addPhotos.length >= PHOTO_MAX);
+  }
+
+  function clearAddPhotos() {
+    addPhotos = [];
+    refreshAddPhotos();
+  }
+
+  /* ===================================================================
      4. 화면
      =================================================================== */
 
@@ -966,8 +1257,9 @@
   var els = {};
   var state = {
     swapped: false,
-    current: null,     // { id | null, name, memo, code, lat, lon, E, N, z, swapped, createdAt }
+    current: null,     // { id | null, name, memo, code, lat, lon, E, N, z, swapped, createdAt, photos }
     editingId: null,
+    editDraft: null,   // 편집 중 입력값 보관 { id, name, memo, folderId, photos }
     filter: "all",      // "all" | "none" | 폴더 id
     collapsed: {},      // 접힘 상태 { "__none" | 폴더 id : true }
     moveId: null,
@@ -1138,6 +1430,7 @@
     c.name = (els.inName.value || "").trim() || guessName();
     c.memo = (els.inMemo.value || "").trim();
     c.folderId = els.inFolder ? (els.inFolder.value || null) : null;
+    c.photos = addPhotos.slice();
     setCurrent(c);
     if (alsoSave) saveCurrent();
   }
@@ -1178,6 +1471,17 @@
     els.tName.textContent = c.name || "이름 없음";
     els.tMemo.textContent = c.memo || "";
     els.tMemo.classList.toggle("hidden", !c.memo);
+
+    var phs = photosOf(c);
+    if (els.tPhotos) {
+      els.tPhotos.innerHTML = "";
+      if (phs.length) {
+        els.tPhotos.classList.remove("hidden");
+        renderThumbs(els.tPhotos, phs, { onOpen: function (i) { openLightbox(phs, i); } });
+      } else {
+        els.tPhotos.classList.add("hidden");
+      }
+    }
 
     els.tLat.textContent = fmt(c.lat, 7);
     els.tLon.textContent = fmt(c.lon, 7);
@@ -1433,22 +1737,41 @@
     if (dup) {
       if (!confirm("같은 위치의 시설이 이미 있습니다.\n\"" + dup.name + "\"\n그래도 새로 저장할까요?")) return;
     }
+    var photos = (c.photos && c.photos.length) ? c.photos.slice() : addPhotos.slice();
     var fac = {
       id: newId(), name: name, memo: memo, code: c.code,
       E: c.E, N: c.N, z: c.z, swapped: c.swapped,
-      lat: c.lat, lon: c.lon, createdAt: Date.now(), folderId: fid
+      lat: c.lat, lon: c.lon, createdAt: Date.now(), folderId: fid,
+      photos: photos
     };
     list.unshift(fac);
-    saveFacilities(list);
+    var saved = saveFacilities(list, { quiet: true });
+    var photoDropped = false;
+    if (!saved && lastWriteQuota && photos.length) {
+      /* 사진 때문에 용량이 찼으면 사진만 빼고 저장한다 — 입력한 이름·메모는 잃지 않게 */
+      fac.photos = [];
+      saved = saveFacilities(list, { quiet: true });
+      photoDropped = !!saved;
+    }
+    if (!saved) {
+      list.shift();
+      memFacilities = list;
+      toast(lastWriteQuota ? QUOTA_MSG : "저장하지 못했습니다. 브라우저 저장 공간을 확인해 주세요.", 4400);
+      return;
+    }
     els.inName.value = "";
     els.inMemo.value = "";
-    toast("\"" + name + "\" 저장 완료 (" + list.length + "곳)");
+    clearAddPhotos();
+    toast(photoDropped
+      ? "공간이 부족해 사진 없이 저장했습니다. 사진을 정리한 뒤 수정에서 다시 넣어 주세요."
+      : ("\"" + name + "\" 저장 완료 (" + loadFacilities().length + "곳)"),
+      photoDropped ? 4800 : 2200);
     els.addState.textContent = "";
     setCurrent(fac);
     renderList();
   }
 
-  function updateFacility(id, patch) {
+  function updateFacility(id, patch, opt) {
     var list = loadFacilities();
     for (var i = 0; i < list.length; i++) {
       if (list[i].id === id) {
@@ -1457,8 +1780,9 @@
         break;
       }
     }
-    saveFacilities(list);
+    var ok = saveFacilities(list, opt);
     renderList();
+    return ok;
   }
 
   function deleteFacility(id) {
@@ -1469,6 +1793,7 @@
     if (!confirm("\"" + f.name + "\" 을(를) 목록에서 지울까요?\n(되돌릴 수 없습니다)") ) return;
     list = list.filter(function (x) { return x.id !== id; });
     saveFacilities(list);
+    if (state.editingId) { state.editingId = null; state.editDraft = null; }
     if (state.current && state.current.id === id) setCurrent(null);
     renderList();
     toast("삭제했습니다.");
@@ -1478,11 +1803,13 @@
     var list = loadFacilities(), f = null;
     for (var i = 0; i < list.length; i++) if (list[i].id === id) f = list[i];
     if (!f) return;
+    if (state.editingId && state.editingId !== id) { state.editingId = null; state.editDraft = null; }
     els.addState.textContent = "";
     setCurrent({
       id: f.id, name: f.name, memo: f.memo || "", code: f.code,
       E: f.E, N: f.N, z: f.z, swapped: !!f.swapped,
-      lat: f.lat, lon: f.lon, createdAt: f.createdAt, folderId: folderIdOf(f) || null
+      lat: f.lat, lon: f.lon, createdAt: f.createdAt, folderId: folderIdOf(f) || null,
+      photos: photosOf(f)
     });
     els.addCard.open = false;
     els.targetCard.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1558,14 +1885,23 @@
     li.className = "item" + (state.current && state.current.id === f.id ? " selected" : "");
 
     if (state.editingId === f.id) {
+      var dr = (state.editDraft && state.editDraft.id === f.id) ? state.editDraft : null;
       var form = document.createElement("div");
       form.className = "editForm";
+      form.setAttribute("data-id", f.id);
       form.innerHTML =
-        '<input type="text" class="eName" value="' + escAttr(f.name) + '" placeholder="시설명" aria-label="시설명">' +
-        '<input type="text" class="eMemo" value="' + escAttr(f.memo || "") + '" placeholder="현장 메모" aria-label="현장 메모">' +
+        '<input type="text" class="eName" value="' + escAttr(dr ? dr.name : (f.name || "")) + '" placeholder="시설명" aria-label="시설명" enterkeyhint="done">' +
+        '<input type="text" class="eMemo" value="' + escAttr(dr ? dr.memo : (f.memo || "")) + '" placeholder="현장 메모" aria-label="현장 메모" enterkeyhint="done">' +
         '<select class="eFolder" aria-label="폴더"></select>' +
+        '<div class="photoBlock flat">' +
+          '<div class="photoHead"><span class="lbl">사진 <em>(최대 3장)</em></span><span class="photoCount eCount"></span></div>' +
+          '<div class="photoRow ePhotos"></div>' +
+          '<label class="photoPick ePick" style="margin-top:8px;">📷 사진 찍기 · 고르기<input type="file" class="eFile" accept="image/*" multiple aria-label="사진 넣기"></label>' +
+        '</div>' +
         '<div class="row"><button type="button" class="ghost accent eSave">저장</button>' +
         '<button type="button" class="ghost eCancel">취소</button></div>';
+      var en = form.querySelector(".eName");
+      var em = form.querySelector(".eMemo");
       var es = form.querySelector(".eFolder");
       var o0 = document.createElement("option");
       o0.value = ""; o0.textContent = "미분류 (폴더 없음)";
@@ -1575,22 +1911,57 @@
         o.value = fd.id; o.textContent = fd.name;
         es.appendChild(o);
       });
-      es.value = folderIdOf(f);
-      form.querySelector(".eSave").addEventListener("click", function () {
-        var n = form.querySelector(".eName").value.trim();
-        var mm = form.querySelector(".eMemo").value.trim();
-        if (!n) { toast("시설명을 넣어 주세요."); return; }
-        updateFacility(f.id, { name: n, memo: mm, folderId: es.value || null });
-        state.editingId = null;
-        if (state.current && state.current.id === f.id) {
-          state.current.name = n; state.current.memo = mm; state.current.folderId = es.value || null;
-          renderTarget();
+      es.value = dr ? (dr.folderId || "") : folderIdOf(f);
+
+      var formPhotos = (dr ? dr.photos : photosOf(f)).slice();
+      var syncDraft = function () {
+        state.editDraft = {
+          id: f.id, name: en.value, memo: em.value,
+          folderId: es.value || null, photos: formPhotos.slice()
+        };
+      };
+      var refreshPhotos = function () {
+        var box = form.querySelector(".ePhotos");
+        box.innerHTML = "";
+        renderThumbs(box, formPhotos, {
+          onRemove: function (idx) { formPhotos.splice(idx, 1); refreshPhotos(); syncDraft(); },
+          onOpen: function (idx) { openLightbox(formPhotos, idx); }
+        });
+        if (!formPhotos.length) {
+          var e = document.createElement("p");
+          e.className = "hint";
+          e.textContent = "사진을 넣으면 목록과 위치 카드에서 볼 수 있습니다.";
+          box.appendChild(e);
         }
-        renderList();
-        toast("수정했습니다.");
+        form.querySelector(".eCount").textContent = formPhotos.length + "/" + PHOTO_MAX;
+        form.querySelector(".ePick").classList.toggle("hidden", formPhotos.length >= PHOTO_MAX);
+      };
+      refreshPhotos();
+
+      form.querySelector(".eFile").addEventListener("change", function (ev) {
+        var files = [];
+        for (var i = 0; i < (ev.target.files ? ev.target.files.length : 0); i++) files.push(ev.target.files[i]);
+        ev.target.value = "";
+        var pick = form.querySelector(".ePick");
+        pick.classList.add("busy");
+        addPhotoFiles(files, formPhotos, function () {
+          pick.classList.remove("busy");
+          refreshPhotos();
+          syncDraft();
+        });
       });
+
+      var commit = function () { commitEdit(f.id, en, em, es, formPhotos); };
+      form.querySelector(".eSave").addEventListener("click", commit);
+      [en, em].forEach(function (inp) {
+        inp.addEventListener("input", syncDraft);
+        inp.addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter") { ev.preventDefault(); commit(); }
+        });
+      });
+      es.addEventListener("change", syncDraft);
       form.querySelector(".eCancel").addEventListener("click", function () {
-        state.editingId = null; renderList();
+        state.editingId = null; state.editDraft = null; renderList();
       });
       li.appendChild(form);
       return li;
@@ -1609,6 +1980,19 @@
       '<div class="itemTop"><span class="itemName">' + escHtml(f.name) + "</span>" +
       '<span class="itemDist">' + distTxt + "</span></div>" +
       '<div class="itemSub">' + escHtml(subTxt.join(" · ")) + "</div>";
+    var phs = photosOf(f);
+    if (phs.length) {
+      var pRow = document.createElement("div");
+      pRow.className = "itemPhotos";
+      renderThumbs(pRow, phs, { small: true, onOpen: function (idx) { openLightbox(phs, idx); } });
+      if (phs.length > 1) {
+        var more = document.createElement("span");
+        more.className = "more";
+        more.textContent = phs.length + "장";
+        pRow.appendChild(more);
+      }
+      btn.appendChild(pRow);
+    }
     btn.addEventListener("click", function () { selectFacility(f.id); });
     li.appendChild(btn);
 
@@ -1630,7 +2014,7 @@
     var eBtn = document.createElement("button");
     eBtn.type = "button"; eBtn.className = "itemBtn edit"; eBtn.setAttribute("aria-label", f.name + " 이름·메모 수정");
     eBtn.textContent = "✎";
-    eBtn.addEventListener("click", function (ev) { ev.stopPropagation(); state.editingId = f.id; renderList(); });
+    eBtn.addEventListener("click", function (ev) { ev.stopPropagation(); startEdit(f.id); });
     li.appendChild(eBtn);
 
     var dBtn = document.createElement("button");
@@ -1642,8 +2026,81 @@
     return li;
   }
 
+  /* 편집 시작 — 지금 보이는 목록에서 폼이 보이도록 필터·접힘을 먼저 맞춘다 */
+  function startEdit(id) {
+    var list = loadFacilities(), f = null;
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) f = list[i];
+    if (!f) { toast("시설을 찾지 못했습니다. 목록을 새로 고침해 주세요."); return; }
+    state.editingId = id;
+    state.editDraft = null;
+    var key = folderIdOf(f) || "none";
+    if (state.filter !== "all" && state.filter !== key) state.filter = "all";
+    state.collapsed[key === "none" ? "__none" : key] = false;
+    renderList();
+    setTimeout(function () {
+      var form = els.facList.querySelector('.editForm[data-id="' + id + '"]');
+      if (!form) return;
+      if (form.scrollIntoView) form.scrollIntoView({ behavior: "smooth", block: "center" });
+      var inp = form.querySelector(".eName");
+      if (inp && window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
+        try { inp.focus(); } catch (e) {}
+      }
+    }, 80);
+  }
+
+  /* 편집 저장 — 이름·메모·폴더·사진을 한 번에 반영 */
+  function commitEdit(id, en, em, es, photos) {
+    var n = (en.value || "").trim();
+    var mm = (em.value || "").trim();
+    if (!n) { toast("시설명을 넣어 주세요."); try { en.focus(); } catch (e) {} return; }
+    var fid = es.value || null;
+    var list = loadFacilities(), target = null;
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) { target = list[i]; break; }
+    if (!target) {
+      state.editingId = null; state.editDraft = null; renderList();
+      toast("이 시설을 찾지 못했습니다. 목록을 다시 열어 주세요.");
+      return;
+    }
+    var ph = photos || [];
+    var apply = function (withPhotos) {
+      target.name = n; target.memo = mm; target.folderId = fid;
+      if (withPhotos) target.photos = ph.slice();
+      else delete target.photos;
+      target.updatedAt = Date.now();
+      return saveFacilities(list, { quiet: true });
+    };
+    var ok = apply(true);
+    var photoDropped = false;
+    if (!ok && lastWriteQuota && ph.length) {
+      ok = apply(false);
+      photoDropped = !!ok;
+    }
+    if (!ok) {
+      toast(lastWriteQuota ? QUOTA_MSG : "저장하지 못했습니다. 브라우저 저장 공간을 확인해 주세요.", 4400);
+      return;
+    }
+    state.editingId = null;
+    state.editDraft = null;
+    if (state.current && state.current.id === id) {
+      state.current.name = n;
+      state.current.memo = mm;
+      state.current.folderId = fid;
+      state.current.photos = photosOf(target);
+      renderTarget();
+    }
+    renderList();
+    toast(photoDropped
+      ? "이름·메모는 저장했습니다. 사진은 저장 공간이 부족해 넣지 못했습니다."
+      : "수정했습니다.");
+  }
+
   var chipsSig = "";
   function renderList() {
+    /* 편집 중에는 목록을 다시 그리지 않는다 — GPS 갱신·거리 계산 등으로
+       입력 중인 값과 커서(포커스)가 날아가지 않도록 */
+    var openForm = els.facList ? els.facList.querySelector(".editForm") : null;
+    if (state.editingId && openForm && openForm.getAttribute("data-id") === state.editingId) return;
+
     var list = loadFacilities();
     var folders = foldersNow();
     var ul = els.facList;
@@ -1717,6 +2174,22 @@
     els.clearAllBtn.classList.toggle("hidden", list.length === 0);
     els.sortBtn.classList.toggle("hidden", list.length === 0);
     els.sortBtn.textContent = settings.sort === "dist" ? "가까운순" : "이름순";
+
+    /* 저장 공간 사용량 (사진이 쌓이면 5MB 한도에 가까워진다) */
+    if (els.spaceInfo) {
+      if (!list.length) {
+        els.spaceInfo.textContent = "";
+      } else {
+        var used = 0;
+        try { used = JSON.stringify(list).length + JSON.stringify(folders).length; } catch (e) { used = 0; }
+        var mb = used / 1048576;
+        var photoCount = 0;
+        list.forEach(function (f) { photoCount += photosOf(f).length; });
+        els.spaceInfo.textContent = "이 브라우저 저장 공간 약 " + mb.toFixed(1) + "MB / 5MB" +
+          (photoCount ? " · 사진 " + photoCount + "장" : "");
+        els.spaceInfo.classList.toggle("near", mb > 3.6);
+      }
+    }
   }
 
   /* ---------- 폴더 만들기·이름 변경·삭제·이동 ---------- */
@@ -1808,7 +2281,7 @@
     saveFolders(fs.filter(function (x) { return x.id !== id; }));
     if (state.current && state.current.folderId === id) state.current.folderId = null;
     if (state.filter === id) state.filter = "all";
-    if (state.editingId) { /* 수정 중이던 것이 미분류로 보이면 그대로 둔다 */ }
+    if (state.editingId) { state.editingId = null; state.editDraft = null; }
     refreshFolderUI();
     renderFolderMgr();
     renderTarget();
@@ -1929,6 +2402,7 @@
     if (!f) return;
     if (folderId && !folderById(folderId)) folderId = null;
     if ((f.folderId || null) === (folderId || null)) { toast("이미 " + folderName(folderId) + "에 있습니다."); return; }
+    if (state.editingId) { state.editingId = null; state.editDraft = null; }
     updateFacility(id, { folderId: folderId || null });
     if (state.current && state.current.id === id) {
       state.current.folderId = folderId || null;
@@ -2129,7 +2603,7 @@
   function exportCsv() {
     var list = loadFacilities();
     if (!list.length) { toast("저장한 시설이 없습니다."); return; }
-    var head = ["시설명", "폴더", "현장메모", "좌표계", "동거E", "북거N", "표고Z", "위도", "경도", "등록일시"];
+    var head = ["시설명", "폴더", "현장메모", "좌표계", "동거E", "북거N", "표고Z", "위도", "경도", "등록일시", "사진"];
     var rows = [head.join(",")];
     list.forEach(function (f) {
       rows.push([
@@ -2138,7 +2612,8 @@
         csvCell(f.N === null || f.N === undefined ? "" : fmt(f.N, 3)),
         csvCell(f.z === null || f.z === undefined ? "" : fmt(f.z, 2)),
         fmt(f.lat, 7), fmt(f.lon, 7),
-        csvCell(new Date(f.createdAt || Date.now()).toLocaleString("ko-KR"))
+        csvCell(new Date(f.createdAt || Date.now()).toLocaleString("ko-KR")),
+        photosOf(f).length ? photosOf(f).length + "장" : ""
       ].join(","));
     });
     var ok = downloadFile("초기우수시설_" + stamp() + ".csv", "\uFEFF" + rows.join("\r\n"), "text/csv");
@@ -2208,12 +2683,15 @@
         var fid = null;
         if (f.folderId) fid = folderMap[f.folderId] || (folderById(f.folderId) ? f.folderId : null);
         if (!fid && f.folderName) fid = ensureFolderByName(f.folderName);
-        incoming.push({
+        var inc = {
           id: f.id || newId(), name: f.name || "이름 없음", memo: f.memo || "",
           code: f.code || "GEO", E: f.E === undefined ? null : f.E, N: f.N === undefined ? null : f.N,
           z: f.z === undefined ? null : f.z, swapped: !!f.swapped,
           lat: lat, lon: lon, createdAt: f.createdAt || Date.now(), folderId: fid
-        });
+        };
+        var incPhotos = photosOf(f);
+        if (incPhotos.length) inc.photos = incPhotos;
+        incoming.push(inc);
       });
     } else {
       var rows = parseCsv(t);
@@ -2274,6 +2752,7 @@
       if (!same) { list.push(f); added++; }
     });
     saveFacilities(list);
+    state.editingId = null; state.editDraft = null;
     refreshFolderUI();
     toast("불러오기 완료 · 새로 " + added + "곳 (건너뜀 " + (incoming.length - added) + ")");
   }
@@ -2296,6 +2775,7 @@
     els.targetCard = $("targetCard");
     els.targetEmpty = $("targetEmpty"); els.targetBody = $("targetBody");
     els.tBadges = $("tBadges"); els.tName = $("tName"); els.tMemo = $("tMemo");
+    els.tPhotos = $("tPhotos");
     els.tLat = $("tLat"); els.tLon = $("tLon"); els.tDms = $("tDms"); els.tMeta = $("tMeta");
     els.distBox = $("distBox"); els.arrow = $("arrow");
     els.distMain = $("distMain"); els.distDir = $("distDir"); els.distSub = $("distSub");
@@ -2307,6 +2787,7 @@
     els.facList = $("facList"); els.listEmpty = $("listEmpty"); els.listCard = $("listCard");
     els.listCount = $("listCount"); els.sortBtn = $("sortBtn"); els.clearAllBtn = $("clearAllBtn");
     els.folderChips = $("folderChips"); els.inFolder = $("inFolder");
+    els.spaceInfo = $("spaceInfo");
     els.folderNew = $("folderNew"); els.newFolderName = $("newFolderName");
 
     els.gpsDot = $("gpsDot"); els.gpsTitle = $("gpsTitle"); els.gpsAcc = $("gpsAcc");
@@ -2388,23 +2869,41 @@
       var name = (els.inName.value || "").trim() || guessName();
       var memo = (els.inMemo.value || "").trim() || ("현재 위치에서 등록 · 정확도 ±" + Math.round(g.acc || 0) + " m");
       var list = loadFacilities();
-      list.unshift({
+      var gfac = {
         id: newId(), name: name, memo: memo, code: "GEO",
         E: null, N: null, z: null, swapped: false,
         lat: g.lat, lon: g.lon, createdAt: Date.now(),
-        folderId: els.inFolder ? (els.inFolder.value || null) : null
-      });
-      saveFacilities(list);
+        folderId: els.inFolder ? (els.inFolder.value || null) : null,
+        photos: addPhotos.slice()
+      };
+      list.unshift(gfac);
+      var gok = saveFacilities(list, { quiet: true });
+      var gDropped = false;
+      if (!gok && lastWriteQuota && gfac.photos.length) {
+        gfac.photos = [];
+        gok = saveFacilities(list, { quiet: true });
+        gDropped = !!gok;
+      }
+      if (!gok) {
+        list.shift();
+        memFacilities = list;
+        toast(lastWriteQuota ? QUOTA_MSG : "저장하지 못했습니다. 브라우저 저장 공간을 확인해 주세요.", 4400);
+        return;
+      }
       els.inName.value = ""; els.inMemo.value = "";
+      clearAddPhotos();
       els.addState.textContent = "";
       renderList();
-      toast("\"" + name + "\" 저장 완료 (현재 위치)");
+      toast(gDropped
+        ? "공간이 부족해 사진 없이 저장했습니다. 사진을 정리한 뒤 수정에서 다시 넣어 주세요."
+        : ("\"" + name + "\" 저장 완료 (현재 위치)"),
+        gDropped ? 4800 : 2200);
     });
 
     $("saveBtn").addEventListener("click", saveCurrent);
 
     $("editBtn").addEventListener("click", function () {
-      if (state.current && state.current.id) { state.editingId = state.current.id; renderList(); els.listCard.scrollIntoView({ behavior: "smooth", block: "start" }); }
+      if (state.current && state.current.id) startEdit(state.current.id);
     });
 
     $("coordCopyBtn").addEventListener("click", function () {
@@ -2471,6 +2970,7 @@
       var n = loadFacilities().length;
       if (!confirm("저장한 시설 " + n + "곳을 모두 지웁니다.\n먼저 [백업 저장]으로 파일을 남겨 두는 것이 안전합니다.\n계속할까요?")) return;
       saveFacilities([]);
+      state.editingId = null; state.editDraft = null;
       setCurrent(null);
       renderList();
       toast("모두 지웠습니다.");
@@ -2496,8 +2996,30 @@
     $("sheetPage").addEventListener("click", function () { if (shareTarget) copyPageLink(shareTarget); });
     document.addEventListener("keydown", function (ev) {
       if (ev.key !== "Escape") return;
+      if ($("lbWrap") && !$("lbWrap").classList.contains("hidden")) { closeLightbox(); return; }
       closeSheet(); closeFolderSheet(); closeMoveSheet();
     });
+
+    /* ---------- 사진 ---------- */
+    refreshAddPhotos();
+    var addIn = $("addPhotos");
+    if (addIn) {
+      addIn.addEventListener("change", function (ev) {
+        var files = [];
+        for (var i = 0; i < (ev.target.files ? ev.target.files.length : 0); i++) files.push(ev.target.files[i]);
+        ev.target.value = "";
+        var pick = $("addPhotoPick");
+        pick.classList.add("busy");
+        addPhotoFiles(files, addPhotos, function () {
+          pick.classList.remove("busy");
+          refreshAddPhotos();
+        });
+      });
+    }
+    $("lbClose").addEventListener("click", closeLightbox);
+    $("lbPrev").addEventListener("click", function () { stepLightbox(-1); });
+    $("lbNext").addEventListener("click", function () { stepLightbox(1); });
+    $("lbStage").addEventListener("click", function (ev) { if (ev.target === this) closeLightbox(); });
 
     applyUrlParams();
 
