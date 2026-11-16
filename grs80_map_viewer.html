@@ -179,6 +179,50 @@
   /* ---------- facility list ---------- */
   .listTools{display:flex; gap:6px; margin-bottom:4px; flex-wrap:wrap;}
   .listTools .ghost{font-size:12px; padding:8px 10px;}
+
+  /* ---------- 폴더(현장) ---------- */
+  .chips{display:flex; gap:6px; overflow-x:auto; margin:2px -15px 3px; padding:2px 15px 7px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{flex:0 0 auto; display:inline-flex; align-items:baseline; padding:8px 12px; font-size:12.5px; font-weight:800;
+    border-radius:999px; border:1px solid var(--line); background:#fff; color:#4b5663; white-space:nowrap; line-height:1.2;}
+  .chip .n{margin-left:5px; font-weight:700; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .chip.on{background:var(--accent-soft); border-color:#cfe9dd; color:var(--accent-dark);}
+  .chip.on .n{color:var(--accent-dark);}
+  .chip:active{background:#eef2f6;}
+  .fgroup{list-style:none;}
+  .fgHead{display:flex; align-items:center; gap:7px; width:100%; text-align:left; padding:10px 11px; margin:7px 0 0;
+    background:#f7f9fb; border:1px solid var(--line); border-radius:11px;
+    font-size:13px; font-weight:800; color:#39434e; letter-spacing:-.01em;}
+  .fgHead:active{background:#eef2f6;}
+  .fgHead .fv{flex:0 0 auto; font-size:9px; color:var(--muted); transition:transform .15s ease;}
+  .fgHead .fn{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .fgHead .fcount{flex:0 0 auto; font-size:11px; font-weight:700; color:var(--muted); background:#fff;
+    border:1px solid var(--line); border-radius:999px; padding:2px 8px; font-variant-numeric:tabular-nums;}
+  .fgroup.closed .fgHead .fv{transform:rotate(-90deg);}
+  .fgroup.closed .groupItems{display:none;}
+  .groupItems{list-style:none; margin:0; padding:0;}
+  .fgEmpty{font-size:11.5px; color:var(--muted); padding:8px 4px 4px; line-height:1.45; word-break:keep-all;}
+  .folderPick{display:flex; gap:7px; align-items:stretch;}
+  .folderPick select{flex:1 1 auto; min-width:0;}
+  .folderPick .mini{flex:0 0 auto; white-space:nowrap; font-size:12.5px; padding:0 12px;}
+  .folderNew{display:grid; gap:7px; padding:10px; background:#f7f9fb; border:1px solid var(--line); border-radius:12px; margin-top:7px;}
+  .folderNew input{font-size:15px; padding:11px;}
+  .folderNewBtns{display:flex; gap:6px;}
+  .folderNewBtns .ghost{flex:1 1 0; text-align:center; font-size:12.5px; padding:9px 6px;}
+  .folderMgrList{max-height:42vh; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .mgrRow{display:grid; gap:7px; padding:9px 0; border-bottom:1px solid var(--line);}
+  .mgrRow:last-child{border-bottom:0;}
+  .mgrInfo{display:flex; align-items:baseline; gap:8px; min-width:0;}
+  .mgrName{font-size:13.5px; font-weight:800; letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .mgrCount{margin-left:auto; font-size:11.5px; font-weight:700; color:var(--muted); flex:0 0 auto; font-variant-numeric:tabular-nums;}
+  .mgrActs{display:flex; gap:6px;}
+  .mgrActs .ghost{flex:1 1 0; text-align:center; font-size:12px; padding:8px 6px;}
+  .mgrActs .ghost.danger{color:var(--danger);}
+  .mgrInput{font-size:14px; padding:10px;}
+  .moveList{display:grid; gap:6px; max-height:52vh; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .moveOpt{width:100%; text-align:left; padding:12px 13px; font-size:13.5px;}
+  .moveOpt.on{background:var(--accent-soft); border-color:#cfe9dd; color:var(--accent-dark); font-weight:800;}
   .histList{list-style:none; margin:0; padding:0;}
   .item{display:flex; align-items:stretch; gap:4px; border-bottom:1px solid var(--line);}
   .item:last-child{border-bottom:0;}
@@ -188,7 +232,8 @@
   .itemName{font-size:14.5px; font-weight:800; letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   .itemDist{margin-left:auto; font-size:12.5px; font-weight:800; color:var(--accent-dark); flex:0 0 auto; font-variant-numeric:tabular-nums;}
   .itemSub{font-size:11.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .itemBtn{flex:0 0 auto; width:38px; background:none; border:0; color:#a9b2bc; font-size:14px;}
+  .itemBtn{flex:0 0 auto; width:34px; background:none; border:0; color:#a9b2bc; font-size:14px; padding:0 2px;}
+  .itemBtn.move:active{color:var(--accent-dark);}
   .itemBtn.del:active{color:var(--danger);}
   .itemBtn.edit:active{color:var(--accent-dark);}
   .item.selected{background:#f6fbf8;}
@@ -281,9 +326,33 @@
     transition:opacity .18s ease, transform .18s ease; z-index:60; max-width:88vw; text-align:center;
   }
   #toast.show{opacity:1; transform:translate(-50%,0);}
+
+  /* ---------- 링크 전용 안내 화면 ---------- */
+  .lockWrap{position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
+    padding:24px 18px calc(24px + env(safe-area-inset-bottom)); background:linear-gradient(180deg,#eef1f5,#e5eaf1);}
+  .lockCard{width:100%; max-width:420px; background:#fff; border-radius:18px; padding:22px 18px 20px; text-align:center;
+    box-shadow:0 1px 2px rgba(18,24,31,.06), 0 14px 36px rgba(18,24,31,.14);}
+  .lockCard .lk{font-size:28px; line-height:1; margin-bottom:10px;}
+  .lockCard h2{font-size:17px; margin:0 0 8px; letter-spacing:-.02em; line-height:1.36; word-break:keep-all;}
+  .lockCard p{font-size:13px; color:var(--muted); margin:0 0 14px; line-height:1.55; word-break:keep-all;}
+  .lockGo{display:block; padding:15px; border-radius:14px; text-decoration:none; font-weight:800; font-size:15px; color:#fff;
+    background:linear-gradient(180deg,#12996a,#0d7d55); box-shadow:0 8px 18px rgba(15,138,95,.24); letter-spacing:-.01em;}
+  .lockGo:active{transform:translateY(1px);}
+  .lockCard p.lockUrl{font-size:11px; color:#8d97a2; margin:12px 0 0; word-break:break-all; line-height:1.45; overflow-wrap:anywhere;}
 </style>
 </head>
 <body>
+
+<section class="lockWrap hidden" id="lockScreen" aria-live="polite">
+  <div class="lockCard">
+    <div class="lk">🔒</div>
+    <h2>이 프로그램은 링크 주소에서만 열 수 있습니다</h2>
+    <p>파일로 내려받아 연 경우에는 동작하지 않습니다.<br>아래 링크로 열어 주세요.</p>
+    <a class="lockGo" id="lockLink" href="https://junjunpapa99.github.io/grs80_map_viewer/grs80_map_viewer.html" target="_blank" rel="noopener noreferrer">링크로 열기</a>
+    <p class="lockUrl" id="lockUrl">https://junjunpapa99.github.io/grs80_map_viewer/grs80_map_viewer.html</p>
+  </div>
+</section>
+
 <main class="app">
 
   <header class="head">
@@ -377,6 +446,7 @@
     </div>
     <div class="listTools">
       <button type="button" class="ghost" id="sortBtn">이름순</button>
+      <button type="button" class="ghost" id="folderMgrBtn">폴더 관리</button>
       <button type="button" class="ghost" id="exportJsonBtn">백업 저장</button>
       <button type="button" class="ghost" id="exportCsvBtn">CSV</button>
       <span class="importBtnWrap">
@@ -384,6 +454,7 @@
         <input type="file" id="importInput" accept=".json,.csv,text/csv,application/json">
       </span>
     </div>
+    <div class="chips" id="folderChips"></div>
     <ul class="histList" id="facList"></ul>
     <div class="emptyBox hidden" id="listEmpty">저장한 시설이 없습니다. 아래 <b>새 시설 추가</b>에서 등록하세요.</div>
     <div style="text-align:right; margin-top:6px;">
@@ -471,6 +542,20 @@
               <input id="inMemo" type="text" placeholder="배수로 우측 맨홀 옆" enterkeyhint="done">
             </div>
           </div>
+          <div>
+            <label class="lbl" for="inFolder">폴더 (현장)</label>
+            <div class="folderPick">
+              <select id="inFolder"></select>
+              <button type="button" class="mini" id="newFolderBtn">+ 새 폴더</button>
+            </div>
+            <div class="folderNew hidden" id="folderNew">
+              <input id="newFolderName" type="text" placeholder="새 폴더 이름 — 예: 안동 하수관로 1공구" enterkeyhint="done">
+              <div class="folderNewBtns">
+                <button type="button" class="ghost accent" id="newFolderOk">만들기</button>
+                <button type="button" class="ghost" id="newFolderCancel">취소</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div style="display:grid; gap:7px; margin-top:13px;">
@@ -485,10 +570,10 @@
   </details>
 
   <footer>
-    설치·로그인·인터넷 없이 동작하는 단일 파일입니다.<br>
+    링크 주소(GitHub)로 열면 설치·로그인 없이 바로 쓸 수 있습니다.<br>
     GRS80 횡단메르카토르 역변환 (a=6378137, 1/f=298.257222101) · 지도 표시는 WGS84 경위도 기준<br>
     <b>중요:</b> 기록은 이 브라우저에만 저장됩니다. 폰을 바꾸거나 기록을 지우기 전에 <b>백업 저장</b>으로 파일을 남겨 두세요.<br>
-    이 파일을 웹에 올리면 <b>이 화면 링크</b>로도 위치를 공유할 수 있습니다.
+    이 화면 링크로도 위치를 그대로 공유할 수 있습니다.
   </footer>
 </main>
 
@@ -507,6 +592,35 @@
       <button type="button" class="ghost" id="sheetPage">이 위치 페이지 링크 복사</button>
     </div>
     <div class="sheetPreview" id="sheetPreview"></div>
+  </div>
+</div>
+
+<div class="sheetWrap hidden" id="folderSheet" role="dialog" aria-modal="true" aria-labelledby="folderSheetTitle">
+  <div class="sheetBackdrop" id="folderSheetBackdrop"></div>
+  <div class="sheet">
+    <div class="sheetHead">
+      <strong id="folderSheetTitle">폴더(현장) 관리</strong>
+      <button type="button" id="folderSheetClose">닫기</button>
+    </div>
+    <div class="folderMgrList" id="folderMgrList"></div>
+    <div class="folderNew" style="margin-top:10px;">
+      <input id="newFolderInSheet" type="text" placeholder="새 폴더 이름 — 예: 안동 하수관로 1공구" enterkeyhint="done">
+      <div class="folderNewBtns">
+        <button type="button" class="ghost accent" id="newFolderInSheetBtn">폴더 추가</button>
+      </div>
+    </div>
+    <p class="hint">폴더를 지워도 그 안의 시설은 지워지지 않고 <b>미분류</b>로 옮겨집니다.</p>
+  </div>
+</div>
+
+<div class="sheetWrap hidden" id="moveSheet" role="dialog" aria-modal="true" aria-labelledby="moveTitle">
+  <div class="sheetBackdrop" id="moveSheetBackdrop"></div>
+  <div class="sheet">
+    <div class="sheetHead">
+      <strong id="moveTitle">폴더 이동</strong>
+      <button type="button" id="moveSheetClose">닫기</button>
+    </div>
+    <div class="moveList" id="moveList"></div>
   </div>
 </div>
 
@@ -783,6 +897,56 @@
     writeLS(KEY_F, JSON.stringify(arr));
   }
 
+  /* ---------- 폴더(현장) 저장소 ---------- */
+  var KEY_D = "grs80.folders.v1";
+  var memFolders = [];
+  var folderCache = null;
+
+  function loadFolders() {
+    var raw = readLS(KEY_D);
+    if (raw === null) return memFolders.slice();
+    try {
+      var arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      var out = [];
+      for (var i = 0; i < arr.length; i++) {
+        var f = arr[i];
+        if (!f || typeof f.name !== "string" || !f.name.trim()) continue;
+        out.push({ id: f.id || newId("d"), name: f.name.trim(), createdAt: f.createdAt || Date.now() });
+      }
+      return out;
+    } catch (e) { return []; }
+  }
+
+  function saveFolders(arr) {
+    memFolders = arr;
+    folderCache = arr;
+    writeLS(KEY_D, JSON.stringify(arr));
+  }
+
+  function foldersNow() {
+    if (folderCache === null) folderCache = loadFolders();
+    return folderCache;
+  }
+
+  function folderById(id) {
+    if (!id) return null;
+    var fs = foldersNow();
+    for (var i = 0; i < fs.length; i++) if (fs[i].id === id) return fs[i];
+    return null;
+  }
+
+  function folderName(id) {
+    var f = folderById(id);
+    return f ? f.name : "미분류";
+  }
+
+  /* 실제로 존재하는 폴더에 들어 있으면 그 id, 아니면 "" (미분류) */
+  function folderIdOf(f) {
+    if (!f || !f.folderId) return "";
+    return folderById(f.folderId) ? f.folderId : "";
+  }
+
   function loadSettings() {
     var raw = readLS(KEY_S);
     if (!raw) return;
@@ -804,6 +968,9 @@
     swapped: false,
     current: null,     // { id | null, name, memo, code, lat, lon, E, N, z, swapped, createdAt }
     editingId: null,
+    filter: "all",      // "all" | "none" | 폴더 id
+    collapsed: {},      // 접힘 상태 { "__none" | 폴더 id : true }
+    moveId: null,
     gps: { active: false, watch: null, lat: null, lon: null, acc: null, at: 0, err: null, waiting: false }
   };
 
@@ -813,12 +980,12 @@
     return CRS_LIST[0];
   }
 
-  function toast(msg) {
+  function toast(msg, ms) {
     var t = $("toast");
     t.textContent = msg;
     t.classList.add("show");
     clearTimeout(toast._t);
-    toast._t = setTimeout(function () { t.classList.remove("show"); }, 2200);
+    toast._t = setTimeout(function () { t.classList.remove("show"); }, ms || 2200);
   }
 
   function showErr(msg) { els.err.textContent = msg; els.err.classList.remove("hidden"); }
@@ -970,6 +1137,7 @@
     if (!c) return;
     c.name = (els.inName.value || "").trim() || guessName();
     c.memo = (els.inMemo.value || "").trim();
+    c.folderId = els.inFolder ? (els.inFolder.value || null) : null;
     setCurrent(c);
     if (alsoSave) saveCurrent();
   }
@@ -1000,6 +1168,9 @@
     var badges = '<span class="badge">' + (crs.geo ? "위·경도" : crs.code + " · " + crs.short + "원점") + "</span>";
     if (!crs.geo) {
       badges += '<span class="badge sub">' + (c.swapped ? "X=북거 · Y=동거" : "X=동거 · Y=북거") + "</span>";
+    }
+    if (c.folderId && folderById(c.folderId)) {
+      badges += '<span class="badge sub">\uD83D\uDCC1 ' + escHtml(folderName(c.folderId)) + "</span>";
     }
     if (!c.id) badges += '<span class="badge warnb">저장 안 됨</span>';
     els.tBadges.innerHTML = badges;
@@ -1086,6 +1257,7 @@
     var base = location.origin + location.pathname;
     var p = ["name=" + encodeURIComponent(c.name || "")];
     if (c.memo) p.push("memo=" + encodeURIComponent(c.memo));
+    if (c.folderId && folderById(c.folderId)) p.push("folder=" + encodeURIComponent(folderName(c.folderId)));
     var crs = crsOf(c.code);
     if (crs.geo) {
       p.push("epsg=geo");
@@ -1105,6 +1277,7 @@
     var lines = [];
     lines.push("[" + (c.name || "시설") + "]");
     if (c.memo) lines.push(c.memo);
+    if (c.folderId && folderById(c.folderId)) lines.push("· 폴더 " + folderName(c.folderId));
     lines.push("");
     if (!crs.geo && c.E !== null && c.E !== undefined) {
       var ord = c.swapped
@@ -1216,11 +1389,21 @@
     els.inName.value = name;
     els.inMemo.value = memo;
 
+    /* 폴더(현장) 이름이 함께 왔으면 그 폴더를 고른다 (없으면 만들어 둔다) */
+    var fname = p.folder || p.site || "";
+    if (fname && els.inFolder) {
+      var fid = ensureFolderByName(fname);
+      buildFolderSelects();
+      if (fid) els.inFolder.value = fid;
+    }
+
     var c = convertInputs();
     if (!c) return false;
     c.name = name || guessName();
     c.memo = memo;
+    c.folderId = els.inFolder ? (els.inFolder.value || null) : null;
     setCurrent(c);
+    renderList();
     els.addCard.open = false;
     els.addState.textContent = "";
     toast("공유된 위치를 열었습니다.");
@@ -1228,15 +1411,16 @@
   }
 
   /* ---------- 저장 / 수정 / 삭제 ---------- */
-  function newId() { return "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function newId(p) { return (p || "f") + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
   function saveCurrent() {
     var c = state.current;
     if (!c) return;
     var name = (els.inName.value || "").trim() || c.name || guessName();
     var memo = (els.inMemo.value || "").trim();
+    var fid = els.inFolder ? (els.inFolder.value || null) : null;
     if (c.id) {
-      updateFacility(c.id, { name: name, memo: memo });
+      updateFacility(c.id, { name: name, memo: memo, folderId: fid });
       toast("저장했습니다.");
       setCurrent(loadFacilities().filter(function (f) { return f.id === c.id; })[0] || c);
       return;
@@ -1252,7 +1436,7 @@
     var fac = {
       id: newId(), name: name, memo: memo, code: c.code,
       E: c.E, N: c.N, z: c.z, swapped: c.swapped,
-      lat: c.lat, lon: c.lon, createdAt: Date.now()
+      lat: c.lat, lon: c.lon, createdAt: Date.now(), folderId: fid
     };
     list.unshift(fac);
     saveFacilities(list);
@@ -1298,104 +1482,460 @@
     setCurrent({
       id: f.id, name: f.name, memo: f.memo || "", code: f.code,
       E: f.E, N: f.N, z: f.z, swapped: !!f.swapped,
-      lat: f.lat, lon: f.lon, createdAt: f.createdAt
+      lat: f.lat, lon: f.lon, createdAt: f.createdAt, folderId: folderIdOf(f) || null
     });
     els.addCard.open = false;
     els.targetCard.scrollIntoView({ behavior: "smooth", block: "start" });
     renderList();
   }
 
-  /* ---------- 목록 ---------- */
+  /* ---------- 목록 : 폴더별 묶기 ---------- */
+  function chipBtn(label, key, n) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip" + (state.filter === key ? " on" : "");
+    b.setAttribute("data-k", key);
+    b.setAttribute("aria-pressed", state.filter === key ? "true" : "false");
+    var t = document.createElement("span");
+    t.textContent = label;
+    b.appendChild(t);
+    if (n !== null && n !== undefined) {
+      var c = document.createElement("span");
+      c.className = "n";
+      c.textContent = n + "곳";
+      b.appendChild(c);
+    }
+    b.addEventListener("click", function () { setFilter(key); });
+    return b;
+  }
+
+  function setFilter(key) {
+    state.filter = key;
+    if (key === "none") { if (els.inFolder) els.inFolder.value = ""; }
+    else if (key !== "all" && els.inFolder && folderById(key)) els.inFolder.value = key;
+    renderList();
+  }
+
+  function groupNode(grp) {
+    var li = document.createElement("li");
+    var ck = grp.key === "" ? "__none" : grp.key;
+    var closed = !!state.collapsed[ck];
+    li.className = "fgroup" + (closed ? " closed" : "");
+
+    var head = document.createElement("button");
+    head.type = "button";
+    head.className = "fgHead";
+    head.setAttribute("aria-expanded", closed ? "false" : "true");
+    var v = document.createElement("span"); v.className = "fv"; v.textContent = "▼";
+    var nm = document.createElement("span"); nm.className = "fn"; nm.textContent = grp.name;
+    var ct = document.createElement("span"); ct.className = "fcount"; ct.textContent = grp.items.length + "곳";
+    head.appendChild(v); head.appendChild(nm); head.appendChild(ct);
+    head.addEventListener("click", function () {
+      state.collapsed[ck] = !state.collapsed[ck];
+      li.classList.toggle("closed", !!state.collapsed[ck]);
+      head.setAttribute("aria-expanded", state.collapsed[ck] ? "false" : "true");
+    });
+    li.appendChild(head);
+
+    var sub = document.createElement("ul");
+    sub.className = "groupItems";
+    if (!grp.items.length) {
+      var empty = document.createElement("li");
+      empty.className = "fgEmpty";
+      empty.textContent = grp.key === ""
+        ? "미분류로 저장된 시설이 없습니다."
+        : "이 폴더에 저장한 시설이 없습니다. 시설을 저장할 때 이 폴더를 고르면 여기에 모입니다.";
+      sub.appendChild(empty);
+    } else {
+      grp.items.forEach(function (f) { sub.appendChild(itemNode(f)); });
+    }
+    li.appendChild(sub);
+    return li;
+  }
+
+  function itemNode(f) {
+    var li = document.createElement("li");
+    li.className = "item" + (state.current && state.current.id === f.id ? " selected" : "");
+
+    if (state.editingId === f.id) {
+      var form = document.createElement("div");
+      form.className = "editForm";
+      form.innerHTML =
+        '<input type="text" class="eName" value="' + escAttr(f.name) + '" placeholder="시설명" aria-label="시설명">' +
+        '<input type="text" class="eMemo" value="' + escAttr(f.memo || "") + '" placeholder="현장 메모" aria-label="현장 메모">' +
+        '<select class="eFolder" aria-label="폴더"></select>' +
+        '<div class="row"><button type="button" class="ghost accent eSave">저장</button>' +
+        '<button type="button" class="ghost eCancel">취소</button></div>';
+      var es = form.querySelector(".eFolder");
+      var o0 = document.createElement("option");
+      o0.value = ""; o0.textContent = "미분류 (폴더 없음)";
+      es.appendChild(o0);
+      foldersNow().forEach(function (fd) {
+        var o = document.createElement("option");
+        o.value = fd.id; o.textContent = fd.name;
+        es.appendChild(o);
+      });
+      es.value = folderIdOf(f);
+      form.querySelector(".eSave").addEventListener("click", function () {
+        var n = form.querySelector(".eName").value.trim();
+        var mm = form.querySelector(".eMemo").value.trim();
+        if (!n) { toast("시설명을 넣어 주세요."); return; }
+        updateFacility(f.id, { name: n, memo: mm, folderId: es.value || null });
+        state.editingId = null;
+        if (state.current && state.current.id === f.id) {
+          state.current.name = n; state.current.memo = mm; state.current.folderId = es.value || null;
+          renderTarget();
+        }
+        renderList();
+        toast("수정했습니다.");
+      });
+      form.querySelector(".eCancel").addEventListener("click", function () {
+        state.editingId = null; renderList();
+      });
+      li.appendChild(form);
+      return li;
+    }
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "itemMain";
+    var subTxt = [];
+    if (f.memo) subTxt.push(f.memo);
+    if (f.code === "GEO") subTxt.push("위·경도");
+    else subTxt.push(crsOf(f.code).short + "원점");
+    var distTxt = "";
+    if (state.gps.active && state.gps.lat !== null) distTxt = fmtDist(distanceM(state.gps.lat, state.gps.lon, f.lat, f.lon));
+    btn.innerHTML =
+      '<div class="itemTop"><span class="itemName">' + escHtml(f.name) + "</span>" +
+      '<span class="itemDist">' + distTxt + "</span></div>" +
+      '<div class="itemSub">' + escHtml(subTxt.join(" · ")) + "</div>";
+    btn.addEventListener("click", function () { selectFacility(f.id); });
+    li.appendChild(btn);
+
+    var sBtn = document.createElement("button");
+    sBtn.type = "button"; sBtn.className = "itemBtn share";
+    sBtn.setAttribute("aria-label", f.name + " 공유");
+    sBtn.textContent = "\u21AA";
+    sBtn.addEventListener("click", function (ev) { ev.stopPropagation(); openSheet(f); });
+    li.appendChild(sBtn);
+
+    var mBtn = document.createElement("button");
+    mBtn.type = "button"; mBtn.className = "itemBtn move";
+    mBtn.setAttribute("aria-label", f.name + " 폴더 이동");
+    mBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="vertical-align:-3px">' +
+      '<path fill="currentColor" d="M3 7a2 2 0 0 1 2-2h3.3c.5 0 1 .2 1.4.6l1.1 1.1c.2.2.4.3.7.3H19a2 2 0 0 1 2 2v7.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.5V7Z"/></svg>';
+    mBtn.addEventListener("click", function (ev) { ev.stopPropagation(); openMoveSheet(f.id); });
+    li.appendChild(mBtn);
+
+    var eBtn = document.createElement("button");
+    eBtn.type = "button"; eBtn.className = "itemBtn edit"; eBtn.setAttribute("aria-label", f.name + " 이름·메모 수정");
+    eBtn.textContent = "✎";
+    eBtn.addEventListener("click", function (ev) { ev.stopPropagation(); state.editingId = f.id; renderList(); });
+    li.appendChild(eBtn);
+
+    var dBtn = document.createElement("button");
+    dBtn.type = "button"; dBtn.className = "itemBtn del"; dBtn.setAttribute("aria-label", f.name + " 삭제");
+    dBtn.textContent = "✕";
+    dBtn.addEventListener("click", function (ev) { ev.stopPropagation(); deleteFacility(f.id); });
+    li.appendChild(dBtn);
+
+    return li;
+  }
+
+  var chipsSig = "";
   function renderList() {
     var list = loadFacilities();
+    var folders = foldersNow();
     var ul = els.facList;
+
+    /* 폴더별 집계 */
+    var counts = { "": 0 };
+    var byGroup = { "": [] };
+    folders.forEach(function (fd) { counts[fd.id] = 0; byGroup[fd.id] = []; });
+    list.forEach(function (f) {
+      var g = folderIdOf(f);
+      if (!byGroup.hasOwnProperty(g)) g = "";
+      byGroup[g].push(f);
+      counts[g] = (counts[g] || 0) + 1;
+    });
+
+    /* 없어진 폴더를 가리키던 필터는 전체로 */
+    if (state.filter !== "all" && state.filter !== "none" && !byGroup.hasOwnProperty(state.filter)) state.filter = "all";
+
+    /* 정렬 */
+    var sorter;
+    if (settings.sort === "dist" && state.gps.active && state.gps.lat !== null) {
+      var gp = state.gps;
+      sorter = function (a, b) { return distanceM(gp.lat, gp.lon, a.lat, a.lon) - distanceM(gp.lat, gp.lon, b.lat, b.lon); };
+    } else {
+      sorter = function (a, b) { return (a.name || "").localeCompare(b.name || "", "ko"); };
+    }
+    Object.keys(byGroup).forEach(function (k) { byGroup[k].sort(sorter); });
+
+    /* 폴더 필터 칩 */
+    var sig = state.filter + "|" + list.length + "|" + counts[""] + "|" +
+      folders.map(function (fd) { return fd.id + "=" + fd.name + "=" + counts[fd.id]; }).join(";");
+    if (sig !== chipsSig) {
+      chipsSig = sig;
+      els.folderChips.innerHTML = "";
+      els.folderChips.appendChild(chipBtn("전체", "all", list.length));
+      folders.forEach(function (fd) { els.folderChips.appendChild(chipBtn(fd.name, fd.id, counts[fd.id] || 0)); });
+      if (counts[""] > 0 || !folders.length || state.filter === "none") els.folderChips.appendChild(chipBtn("미분류", "none", counts[""] || 0));
+    } else {
+      var cbs = els.folderChips.getElementsByTagName("button");
+      for (var ci = 0; ci < cbs.length; ci++) {
+        var on = cbs[ci].getAttribute("data-k") === state.filter;
+        cbs[ci].classList.toggle("on", on);
+        cbs[ci].setAttribute("aria-pressed", on ? "true" : "false");
+      }
+    }
+
+    /* 그룹 */
     ul.innerHTML = "";
-    els.listCount.textContent = list.length + "곳";
+    var shown = 0;
+    if (list.length) {
+      var groups = [];
+      if (state.filter === "all") {
+        folders.forEach(function (fd) { groups.push({ key: fd.id, name: fd.name, items: byGroup[fd.id] }); });
+        if (byGroup[""].length || !folders.length) groups.push({ key: "", name: "미분류", items: byGroup[""] });
+      } else if (state.filter === "none") {
+        groups.push({ key: "", name: "미분류", items: byGroup[""] });
+      } else {
+        var fd = folderById(state.filter);
+        groups.push({ key: state.filter, name: fd ? fd.name : "미분류", items: byGroup[state.filter] || [] });
+      }
+      groups.forEach(function (grp) {
+        shown += grp.items.length;
+        ul.appendChild(groupNode(grp));
+      });
+    }
+
+    els.listCount.textContent = state.filter === "all"
+      ? (list.length + "곳")
+      : (shown + "곳 · 전체 " + list.length + "곳");
     els.listEmpty.classList.toggle("hidden", list.length > 0);
     els.clearAllBtn.classList.toggle("hidden", list.length === 0);
     els.sortBtn.classList.toggle("hidden", list.length === 0);
-
-    var view = list.slice();
-    if (settings.sort === "dist" && state.gps.active && state.gps.lat !== null) {
-      var g = state.gps;
-      view.sort(function (a, b) {
-        return distanceM(g.lat, g.lon, a.lat, a.lon) - distanceM(g.lat, g.lon, b.lat, b.lon);
-      });
-    } else {
-      view.sort(function (a, b) { return (a.name || "").localeCompare(b.name || "", "ko"); });
-    }
     els.sortBtn.textContent = settings.sort === "dist" ? "가까운순" : "이름순";
+  }
 
-    view.forEach(function (f) {
-      var li = document.createElement("li");
-      li.className = "item" + (state.current && state.current.id === f.id ? " selected" : "");
-
-      if (state.editingId === f.id) {
-        var form = document.createElement("div");
-        form.className = "editForm";
-        form.innerHTML =
-          '<input type="text" class="eName" value="' + escAttr(f.name) + '" placeholder="시설명">' +
-          '<input type="text" class="eMemo" value="' + escAttr(f.memo || "") + '" placeholder="현장 메모">' +
-          '<div class="row"><button type="button" class="ghost accent eSave">저장</button>' +
-          '<button type="button" class="ghost eCancel">취소</button></div>';
-        form.querySelector(".eSave").addEventListener("click", function () {
-          var n = form.querySelector(".eName").value.trim();
-          var mm = form.querySelector(".eMemo").value.trim();
-          if (!n) { toast("시설명을 넣어 주세요."); return; }
-          updateFacility(f.id, { name: n, memo: mm });
-          state.editingId = null;
-          if (state.current && state.current.id === f.id) {
-            state.current.name = n; state.current.memo = mm;
-            renderTarget();
-          }
-          renderList();
-          toast("수정했습니다.");
-        });
-        form.querySelector(".eCancel").addEventListener("click", function () {
-          state.editingId = null; renderList();
-        });
-        li.appendChild(form);
-        ul.appendChild(li);
-        return;
-      }
-
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "itemMain";
-      var sub = [];
-      if (f.memo) sub.push(f.memo);
-      if (f.code === "GEO") sub.push("위·경도");
-      else sub.push(crsOf(f.code).short + "원점");
-      var distTxt = "";
-      if (state.gps.active && state.gps.lat !== null) distTxt = fmtDist(distanceM(state.gps.lat, state.gps.lon, f.lat, f.lon));
-      btn.innerHTML =
-        '<div class="itemTop"><span class="itemName">' + escHtml(f.name) + "</span>" +
-        '<span class="itemDist">' + distTxt + "</span></div>" +
-        '<div class="itemSub">' + escHtml(sub.join(" · ")) + "</div>";
-      btn.addEventListener("click", function () { selectFacility(f.id); });
-      li.appendChild(btn);
-
-      var sBtn = document.createElement("button");
-      sBtn.type = "button"; sBtn.className = "itemBtn share";
-      sBtn.setAttribute("aria-label", f.name + " 공유");
-      sBtn.textContent = "\u21AA";
-      sBtn.addEventListener("click", function (ev) { ev.stopPropagation(); openSheet(f); });
-      li.appendChild(sBtn);
-
-      var eBtn = document.createElement("button");
-      eBtn.type = "button"; eBtn.className = "itemBtn edit"; eBtn.setAttribute("aria-label", f.name + " 이름·메모 수정");
-      eBtn.textContent = "✎";
-      eBtn.addEventListener("click", function (ev) { ev.stopPropagation(); state.editingId = f.id; renderList(); });
-      li.appendChild(eBtn);
-
-      var dBtn = document.createElement("button");
-      dBtn.type = "button"; dBtn.className = "itemBtn del"; dBtn.setAttribute("aria-label", f.name + " 삭제");
-      dBtn.textContent = "✕";
-      dBtn.addEventListener("click", function (ev) { ev.stopPropagation(); deleteFacility(f.id); });
-      li.appendChild(dBtn);
-
-      ul.appendChild(li);
+  /* ---------- 폴더 만들기·이름 변경·삭제·이동 ---------- */
+  function buildFolderSelects() {
+    var sel = els.inFolder;
+    if (!sel) return;
+    var prev = sel.value;
+    sel.innerHTML = "";
+    var o0 = document.createElement("option");
+    o0.value = ""; o0.textContent = "미분류 (폴더 없음)";
+    sel.appendChild(o0);
+    foldersNow().forEach(function (fd) {
+      var o = document.createElement("option");
+      o.value = fd.id; o.textContent = fd.name;
+      sel.appendChild(o);
     });
+    var ok = false;
+    for (var i = 0; i < sel.options.length; i++) if (sel.options[i].value === prev) ok = true;
+    sel.value = ok ? prev : "";
+  }
+
+  function refreshFolderUI() {
+    buildFolderSelects();
+    renderList();
+  }
+
+  function createFolder(name, selectIn) {
+    name = String(name === null || name === undefined ? "" : name).replace(/\s+/g, " ").trim();
+    if (!name) { toast("폴더 이름을 넣어 주세요."); return null; }
+    var fs = foldersNow(), fd = null;
+    for (var i = 0; i < fs.length; i++) if (fs[i].name === name) { fd = fs[i]; break; }
+    var existed = !!fd;
+    if (!fd) {
+      fd = { id: newId("d"), name: name, createdAt: Date.now() };
+      fs.push(fd);
+      saveFolders(fs);
+    }
+    buildFolderSelects();
+    if (selectIn && els.inFolder) els.inFolder.value = fd.id;
+    renderList();
+    toast(existed ? "이미 \"" + name + "\" 폴더가 있습니다. 그 폴더를 골랐습니다." : "\"" + name + "\" 폴더를 만들었습니다.");
+    return fd.id;
+  }
+
+  /* 불러오기용: 이름이 같은 폴더가 있으면 그 id, 없으면 새로 만든다 */
+  function ensureFolderByName(name) {
+    name = String(name === null || name === undefined ? "" : name).replace(/\s+/g, " ").trim();
+    if (!name) return null;
+    var fs = foldersNow();
+    for (var i = 0; i < fs.length; i++) if (fs[i].name === name) return fs[i].id;
+    var fd = { id: newId("d"), name: name, createdAt: Date.now() };
+    fs.push(fd);
+    saveFolders(fs);
+    return fd.id;
+  }
+
+  function renameFolder(id, name) {
+    name = String(name === null || name === undefined ? "" : name).replace(/\s+/g, " ").trim();
+    if (!name) { toast("폴더 이름을 넣어 주세요."); return false; }
+    var fs = foldersNow(), fd = null;
+    for (var i = 0; i < fs.length; i++) {
+      if (fs[i].name === name && fs[i].id !== id) { toast("같은 이름의 폴더가 이미 있습니다."); return false; }
+      if (fs[i].id === id) fd = fs[i];
+    }
+    if (!fd) return false;
+    fd.name = name;
+    saveFolders(fs);
+    refreshFolderUI();
+    renderFolderMgr();
+    toast("폴더 이름을 \"" + name + "\"(으)로 바꿨습니다.");
+    return true;
+  }
+
+  function deleteFolder(id) {
+    var fs = foldersNow(), fd = null;
+    for (var i = 0; i < fs.length; i++) if (fs[i].id === id) fd = fs[i];
+    if (!fd) return;
+    var list = loadFacilities();
+    var n = 0;
+    for (var j = 0; j < list.length; j++) if (folderIdOf(list[j]) === id) n++;
+    var msg = "\"" + fd.name + "\" 폴더를 지울까요?";
+    if (n) msg += "\n\n이 폴더의 시설 " + n + "곳은 지워지지 않고 \"미분류\"로 옮겨집니다.";
+    if (!confirm(msg)) return;
+
+    for (var k = 0; k < list.length; k++) {
+      if (folderIdOf(list[k]) === id) { list[k].folderId = null; list[k].updatedAt = Date.now(); }
+    }
+    saveFacilities(list);
+    saveFolders(fs.filter(function (x) { return x.id !== id; }));
+    if (state.current && state.current.folderId === id) state.current.folderId = null;
+    if (state.filter === id) state.filter = "all";
+    if (state.editingId) { /* 수정 중이던 것이 미분류로 보이면 그대로 둔다 */ }
+    refreshFolderUI();
+    renderFolderMgr();
+    renderTarget();
+    toast("\"" + fd.name + "\" 폴더를 지웠습니다. 시설은 미분류에 남아 있습니다.");
+  }
+
+  function renderFolderMgr() {
+    var box = $("folderMgrList");
+    if (!box) return;
+    box.innerHTML = "";
+    var folders = foldersNow(), list = loadFacilities();
+    var counts = {};
+    list.forEach(function (f) {
+      var g = folderIdOf(f);
+      counts[g] = (counts[g] || 0) + 1;
+    });
+
+    if (!folders.length) {
+      var p = document.createElement("p");
+      p.className = "emptyBox";
+      p.textContent = "아직 만든 폴더가 없습니다. 아래에서 폴더 이름을 넣어 추가하세요.";
+      box.appendChild(p);
+      return;
+    }
+
+    folders.forEach(function (fd) {
+      var row = document.createElement("div");
+      row.className = "mgrRow";
+
+      var info = document.createElement("div");
+      info.className = "mgrInfo";
+      var nm = document.createElement("span");
+      nm.className = "mgrName"; nm.textContent = fd.name;
+      var ct = document.createElement("span");
+      ct.className = "mgrCount"; ct.textContent = (counts[fd.id] || 0) + "곳";
+      info.appendChild(nm); info.appendChild(ct);
+
+      var acts = document.createElement("div");
+      acts.className = "mgrActs";
+      var rb = document.createElement("button");
+      rb.type = "button"; rb.className = "ghost"; rb.textContent = "이름 변경";
+      var db = document.createElement("button");
+      db.type = "button"; db.className = "ghost danger"; db.textContent = "삭제";
+      acts.appendChild(rb); acts.appendChild(db);
+
+      row.appendChild(info); row.appendChild(acts);
+      box.appendChild(row);
+
+      rb.addEventListener("click", function () {
+        row.innerHTML = "";
+        var inp = document.createElement("input");
+        inp.type = "text"; inp.className = "mgrInput"; inp.value = fd.name;
+        inp.setAttribute("aria-label", "폴더 이름");
+        var sv = document.createElement("button");
+        sv.type = "button"; sv.className = "ghost accent"; sv.textContent = "저장";
+        var cx = document.createElement("button");
+        cx.type = "button"; cx.className = "ghost"; cx.textContent = "취소";
+        var wrap = document.createElement("div");
+        wrap.className = "mgrActs";
+        wrap.appendChild(sv); wrap.appendChild(cx);
+        row.appendChild(inp); row.appendChild(wrap);
+        inp.focus();
+        inp.setSelectionRange(0, inp.value.length);
+        var commit = function () {
+          if (!renameFolder(fd.id, inp.value)) { renderFolderMgr(); }
+        };
+        sv.addEventListener("click", commit);
+        inp.addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter") { ev.preventDefault(); commit(); }
+          else if (ev.key === "Escape") { renderFolderMgr(); }
+        });
+        cx.addEventListener("click", function () { renderFolderMgr(); });
+      });
+
+      db.addEventListener("click", function () { deleteFolder(fd.id); });
+    });
+  }
+
+  function openFolderSheet() {
+    renderFolderMgr();
+    $("folderSheet").classList.remove("hidden");
+  }
+  function closeFolderSheet() { $("folderSheet").classList.add("hidden"); }
+
+  function openMoveSheet(id) {
+    var list = loadFacilities(), f = null;
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) f = list[i];
+    if (!f) return;
+    state.moveId = id;
+    $("moveTitle").textContent = (f.name || "시설") + " — 폴더 이동";
+    var box = $("moveList");
+    box.innerHTML = "";
+    var cur = folderIdOf(f);
+    var opts = [{ id: "", name: "미분류 (폴더 없음)" }].concat(
+      foldersNow().map(function (x) { return { id: x.id, name: x.name }; })
+    );
+    opts.forEach(function (o) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "ghost moveOpt" + (o.id === cur ? " on" : "");
+      b.textContent = (o.id === cur ? "✓ " : "") + o.name;
+      b.addEventListener("click", function () {
+        closeMoveSheet();
+        moveFacilityTo(id, o.id || null);
+      });
+      box.appendChild(b);
+    });
+    $("moveSheet").classList.remove("hidden");
+  }
+  function closeMoveSheet() {
+    $("moveSheet").classList.add("hidden");
+    state.moveId = null;
+  }
+
+  function moveFacilityTo(id, folderId) {
+    var list = loadFacilities(), f = null;
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) f = list[i];
+    if (!f) return;
+    if (folderId && !folderById(folderId)) folderId = null;
+    if ((f.folderId || null) === (folderId || null)) { toast("이미 " + folderName(folderId) + "에 있습니다."); return; }
+    updateFacility(id, { folderId: folderId || null });
+    if (state.current && state.current.id === id) {
+      state.current.folderId = folderId || null;
+      renderTarget();
+    }
+    toast("\"" + (f.name || "시설") + "\" → " + folderName(folderId));
+    refreshFolderUI();
   }
 
   function escHtml(s) {
@@ -1573,7 +2113,10 @@
   function exportJson() {
     var list = loadFacilities();
     if (!list.length) { toast("저장한 시설이 없습니다."); return; }
-    var payload = { app: "grs80-facility-viewer", version: 1, exportedAt: new Date().toISOString(), facilities: list };
+    var payload = {
+      app: "grs80-facility-viewer", version: 2, exportedAt: new Date().toISOString(),
+      folders: foldersNow(), facilities: list
+    };
     var ok = downloadFile("초기우수시설_" + stamp() + ".json", JSON.stringify(payload, null, 2), "application/json");
     toast(ok ? "백업 파일을 저장했습니다." : "파일 저장이 막혔습니다. 브라우저에서 다운로드를 허용해 주세요.");
   }
@@ -1586,11 +2129,11 @@
   function exportCsv() {
     var list = loadFacilities();
     if (!list.length) { toast("저장한 시설이 없습니다."); return; }
-    var head = ["시설명", "현장메모", "좌표계", "동거E", "북거N", "표고Z", "위도", "경도", "등록일시"];
+    var head = ["시설명", "폴더", "현장메모", "좌표계", "동거E", "북거N", "표고Z", "위도", "경도", "등록일시"];
     var rows = [head.join(",")];
     list.forEach(function (f) {
       rows.push([
-        csvCell(f.name), csvCell(f.memo || ""), csvCell(f.code),
+        csvCell(f.name), csvCell(folderIdOf(f) ? folderName(f.folderId) : ""), csvCell(f.memo || ""), csvCell(f.code),
         csvCell(f.E === null || f.E === undefined ? "" : fmt(f.E, 3)),
         csvCell(f.N === null || f.N === undefined ? "" : fmt(f.N, 3)),
         csvCell(f.z === null || f.z === undefined ? "" : fmt(f.z, 2)),
@@ -1620,38 +2163,100 @@
     return rows.filter(function (r) { return r.length && r.join("").trim() !== ""; });
   }
 
+  function normHead(s) {
+    return String(s === null || s === undefined ? "" : s).replace(/[\s\uFEFF]/g, "").toLowerCase();
+  }
+
+  function cellAt(r, i) {
+    if (i === null || i === undefined || i < 0 || i >= r.length) return "";
+    return String(r[i] === null || r[i] === undefined ? "" : r[i]).trim();
+  }
+
   function importText(text, fileName) {
     var incoming = [];
     var t = text.replace(/^\uFEFF/, "").trim();
     if (t.charAt(0) === "{" || t.charAt(0) === "[") {
       var obj = JSON.parse(t);
       var arr = Array.isArray(obj) ? obj : (obj.facilities || []);
+      var inFolders = (!Array.isArray(obj) && Array.isArray(obj.folders)) ? obj.folders : [];
+      var folderMap = {};
+
+      /* 폴더 먼저 합치기 — id가 같으면 그대로, 이름이 같으면 그 폴더로, 없으면 새로 만든다 */
+      if (inFolders.length) {
+        var local = foldersNow();
+        inFolders.forEach(function (fd) {
+          if (!fd || typeof fd.name !== "string" || !fd.name.trim()) return;
+          var nm = fd.name.replace(/\s+/g, " ").trim(), hit = null;
+          if (fd.id) {
+            for (var i = 0; i < local.length; i++) if (local[i].id === fd.id) { hit = local[i]; break; }
+          }
+          if (!hit) {
+            for (var j = 0; j < local.length; j++) if (local[j].name === nm) { hit = local[j]; break; }
+          }
+          if (!hit) {
+            hit = { id: fd.id || newId("d"), name: nm, createdAt: fd.createdAt || Date.now() };
+            local.push(hit);
+          }
+          if (fd.id) folderMap[fd.id] = hit.id;
+        });
+        saveFolders(local);
+      }
+
       arr.forEach(function (f) {
         var lat = Number(f.lat), lon = Number(f.lon);
-        if (isFinite(lat) && isFinite(lon)) {
-          incoming.push({
-            id: f.id || newId(), name: f.name || "이름 없음", memo: f.memo || "",
-            code: f.code || "GEO", E: f.E === undefined ? null : f.E, N: f.N === undefined ? null : f.N,
-            z: f.z === undefined ? null : f.z, swapped: !!f.swapped,
-            lat: lat, lon: lon, createdAt: f.createdAt || Date.now()
-          });
-        }
+        if (!isFinite(lat) || !isFinite(lon)) return;
+        var fid = null;
+        if (f.folderId) fid = folderMap[f.folderId] || (folderById(f.folderId) ? f.folderId : null);
+        if (!fid && f.folderName) fid = ensureFolderByName(f.folderName);
+        incoming.push({
+          id: f.id || newId(), name: f.name || "이름 없음", memo: f.memo || "",
+          code: f.code || "GEO", E: f.E === undefined ? null : f.E, N: f.N === undefined ? null : f.N,
+          z: f.z === undefined ? null : f.z, swapped: !!f.swapped,
+          lat: lat, lon: lon, createdAt: f.createdAt || Date.now(), folderId: fid
+        });
       });
     } else {
       var rows = parseCsv(t);
       if (!rows.length) throw new Error("empty");
+
+      /* 예전 형식(폴더 열 없음) 기본 순서 */
+      var idx = { name: 0, folder: -1, memo: 1, code: 2, E: 3, N: 4, z: 5, lat: 6, lon: 7, createdAt: 8 };
       var start = 0;
-      if (/시설명|name/i.test(rows[0].join(","))) start = 1;
+      if (/시설명|name|폴더|folder/i.test(rows[0].join(","))) {
+        start = 1;
+        idx = { name: -1, folder: -1, memo: -1, code: -1, E: -1, N: -1, z: -1, lat: -1, lon: -1, createdAt: -1 };
+        var alias = {
+          "시설명": "name", "name": "name", "시설": "name",
+          "폴더": "folder", "folder": "folder",
+          "현장메모": "memo", "메모": "memo", "memo": "memo",
+          "좌표계": "code", "code": "code",
+          "동거e": "E", "e": "E", "북거n": "N", "n": "N",
+          "표고z": "z", "z": "z",
+          "위도": "lat", "lat": "lat", "경도": "lon", "lon": "lon",
+          "등록일시": "createdAt", "등록일": "createdAt", "createdat": "createdAt"
+        };
+        rows[0].forEach(function (h, i) {
+          var k = alias[normHead(h)];
+          if (k && idx[k] < 0) idx[k] = i;
+        });
+        if (idx.name < 0) idx.name = 0;
+        if (idx.memo < 0) idx.memo = 1;
+        if (idx.lat < 0) idx.lat = 6;
+        if (idx.lon < 0) idx.lon = 7;
+      }
+
       for (var i = start; i < rows.length; i++) {
         var r = rows[i];
-        var lat = parseFloat(r[6]), lon = parseFloat(r[7]);
+        var lat = parseFloat(cellAt(r, idx.lat)), lon = parseFloat(cellAt(r, idx.lon));
         if (!isFinite(lat) || !isFinite(lon)) continue;
+        var folderId = idx.folder >= 0 ? ensureFolderByName(cellAt(r, idx.folder)) : null;
+        var zz = cellAt(r, idx.z);
         incoming.push({
-          id: newId(), name: r[0] || "이름 없음", memo: r[1] || "", code: r[2] || "GEO",
-          E: isFinite(parseFloat(r[3])) ? parseFloat(r[3]) : null,
-          N: isFinite(parseFloat(r[4])) ? parseFloat(r[4]) : null,
-          z: (r[5] === "" || r[5] === undefined || !isFinite(parseFloat(r[5]))) ? null : parseFloat(r[5]),
-          swapped: false, lat: lat, lon: lon, createdAt: Date.now()
+          id: newId(), name: cellAt(r, idx.name) || "이름 없음", memo: cellAt(r, idx.memo), code: cellAt(r, idx.code) || "GEO",
+          E: isFinite(parseFloat(cellAt(r, idx.E))) ? parseFloat(cellAt(r, idx.E)) : null,
+          N: isFinite(parseFloat(cellAt(r, idx.N))) ? parseFloat(cellAt(r, idx.N)) : null,
+          z: (zz === "" || !isFinite(parseFloat(zz))) ? null : parseFloat(zz),
+          swapped: false, lat: lat, lon: lon, createdAt: Date.now(), folderId: folderId
         });
       }
     }
@@ -1669,7 +2274,7 @@
       if (!same) { list.push(f); added++; }
     });
     saveFacilities(list);
-    renderList();
+    refreshFolderUI();
     toast("불러오기 완료 · 새로 " + added + "곳 (건너뜀 " + (incoming.length - added) + ")");
   }
 
@@ -1701,12 +2306,15 @@
 
     els.facList = $("facList"); els.listEmpty = $("listEmpty"); els.listCard = $("listCard");
     els.listCount = $("listCount"); els.sortBtn = $("sortBtn"); els.clearAllBtn = $("clearAllBtn");
+    els.folderChips = $("folderChips"); els.inFolder = $("inFolder");
+    els.folderNew = $("folderNew"); els.newFolderName = $("newFolderName");
 
     els.gpsDot = $("gpsDot"); els.gpsTitle = $("gpsTitle"); els.gpsAcc = $("gpsAcc");
     els.gpsMsg = $("gpsMsg"); els.gpsCoord = $("gpsCoord"); els.gpsBtn = $("gpsBtn");
 
     loadSettings();
     buildCrsSelect();
+    buildFolderSelects();
     bindRegionTable();
     refreshMode();
     renderList();
@@ -1783,7 +2391,8 @@
       list.unshift({
         id: newId(), name: name, memo: memo, code: "GEO",
         E: null, N: null, z: null, swapped: false,
-        lat: g.lat, lon: g.lon, createdAt: Date.now()
+        lat: g.lat, lon: g.lon, createdAt: Date.now(),
+        folderId: els.inFolder ? (els.inFolder.value || null) : null
       });
       saveFacilities(list);
       els.inName.value = ""; els.inMemo.value = "";
@@ -1807,6 +2416,40 @@
       settings.sort = settings.sort === "name" ? "dist" : "name";
       saveSettings();
       renderList();
+    });
+
+    /* ---------- 폴더(현장) ---------- */
+    $("folderMgrBtn").addEventListener("click", openFolderSheet);
+    $("folderSheetClose").addEventListener("click", closeFolderSheet);
+    $("folderSheetBackdrop").addEventListener("click", closeFolderSheet);
+    $("moveSheetClose").addEventListener("click", closeMoveSheet);
+    $("moveSheetBackdrop").addEventListener("click", closeMoveSheet);
+
+    $("newFolderBtn").addEventListener("click", function () {
+      var box = els.folderNew;
+      var willShow = box.classList.contains("hidden");
+      box.classList.toggle("hidden", !willShow);
+      if (willShow) { els.newFolderName.value = ""; els.newFolderName.focus(); }
+    });
+    $("newFolderCancel").addEventListener("click", function () {
+      els.folderNew.classList.add("hidden");
+      els.newFolderName.value = "";
+    });
+    var makeFolderFromForm = function () {
+      var id = createFolder(els.newFolderName.value, true);
+      if (id) { els.newFolderName.value = ""; els.folderNew.classList.add("hidden"); }
+    };
+    $("newFolderOk").addEventListener("click", makeFolderFromForm);
+    els.newFolderName.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter") { ev.preventDefault(); makeFolderFromForm(); }
+    });
+    var makeFolderFromSheet = function () {
+      var inp = $("newFolderInSheet");
+      if (createFolder(inp.value, false)) { inp.value = ""; renderFolderMgr(); }
+    };
+    $("newFolderInSheetBtn").addEventListener("click", makeFolderFromSheet);
+    $("newFolderInSheet").addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter") { ev.preventDefault(); makeFolderFromSheet(); }
     });
 
     $("exportJsonBtn").addEventListener("click", exportJson);
@@ -1851,7 +2494,10 @@
     $("sheetKakao").addEventListener("click", function () { if (shareTarget) copyKakao(shareTarget); });
     $("sheetNaver").addEventListener("click", function () { if (shareTarget) copyNaver(shareTarget); });
     $("sheetPage").addEventListener("click", function () { if (shareTarget) copyPageLink(shareTarget); });
-    document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") closeSheet(); });
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key !== "Escape") return;
+      closeSheet(); closeFolderSheet(); closeMoveSheet();
+    });
 
     applyUrlParams();
 
@@ -1875,8 +2521,88 @@
     return ok;
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
-  else init();
+  /* ===================================================================
+     8. 저장·복사 방지 (가벼운 잠금) · 링크 주소 전용
+     =================================================================== */
+
+  var LOCK_MSG = "이 페이지는 링크 주소에서만 사용할 수 있습니다";
+  var lastLockToast = 0;
+
+  function lockWarn() {
+    var now = Date.now();
+    if (now - lastLockToast < 1100) return;
+    lastLockToast = now;
+    toast(LOCK_MSG, 2000);
+  }
+
+  /* github.io(사용자 Pages 도메인)에서 열렸을 때만 정상 동작. 저장소 이름이 바뀌어도 유지된다. */
+  function hostAllowed() {
+    var h = "";
+    try { h = String(location.hostname || "").toLowerCase(); } catch (e) { h = ""; }
+    return /\.github\.io$/.test(h);
+  }
+
+  function inField(el) {
+    if (!el || !el.tagName) return false;
+    var tag = String(el.tagName).toUpperCase();
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+    return !!el.isContentEditable;
+  }
+
+  function bindGuards() {
+    document.addEventListener("contextmenu", function (ev) {
+      ev.preventDefault(); lockWarn();
+    }, true);
+
+    document.addEventListener("dragstart", function (ev) {
+      ev.preventDefault(); lockWarn();
+    }, true);
+
+    window.addEventListener("beforeprint", function () { lockWarn(); });
+
+    document.addEventListener("keydown", function (ev) {
+      var k = String(ev.key || "").toLowerCase();
+      var mod = ev.ctrlKey || ev.metaKey;
+      var field = inField(ev.target);
+
+      if (ev.key === "F12") { ev.preventDefault(); lockWarn(); return; }
+      if (mod && ev.shiftKey && (k === "i" || k === "j" || k === "c")) { ev.preventDefault(); lockWarn(); return; }
+      if (mod && (k === "u" || k === "p" || k === "s")) { ev.preventDefault(); lockWarn(); return; }
+      if (mod && k === "a") {
+        if (field) return;              /* 입력 칸 안에서는 그대로 허용 */
+        ev.preventDefault(); lockWarn(); return;
+      }
+      if (mod && k === "c") {
+        if (field) return;              /* 입력 칸 안 복사는 그대로 허용 */
+        ev.preventDefault(); lockWarn(); return;
+      }
+    }, true);
+
+    var markNoDrag = function () {
+      var nodes = document.querySelectorAll("a, img");
+      for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].setAttribute) nodes[i].setAttribute("draggable", "false");
+      }
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", markNoDrag);
+    else markNoDrag();
+  }
+
+  function showLockScreen() {
+    var app = document.querySelector("main.app");
+    if (app) app.classList.add("hidden");
+    var ls = $("lockScreen");
+    if (ls) ls.classList.remove("hidden");
+    try { document.title = "링크로 열어 주세요 · 초기우수시설 위치 찾기"; } catch (e) {}
+  }
+
+  if (!hostAllowed()) {
+    showLockScreen();
+  } else {
+    bindGuards();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+    else init();
+  }
 })();
 </script>
 </body>
