@@ -143,6 +143,39 @@
   .altList div:last-child{border-bottom:0;}
   .altList span.c{display:inline-block; min-width:74px; font-weight:700; color:#39434e;}
 
+  /* 원점별 사용 지역 표 */
+  details.alt.regionTable{margin-top:10px;}
+  .rgIntro{font-size:11.5px; color:var(--muted); margin:7px 0 0; line-height:1.45;}
+  .rgTable{width:100%; border-collapse:collapse; table-layout:fixed; margin-top:8px; font-size:12px; color:#39434e;}
+  .rgTable col.rgC1{width:37%;}
+  .rgTable thead th{
+    font-size:10.5px; font-weight:800; color:var(--muted); letter-spacing:.02em;
+    text-align:left; padding:0 6px 6px; border-bottom:1px solid #d8dfe7;
+  }
+  .rgTable tbody th,.rgTable tbody td{
+    text-align:left; vertical-align:top; font-weight:400; padding:7px 6px;
+    border-bottom:1px solid var(--line); line-height:1.4;
+    word-break:keep-all; overflow-wrap:anywhere;
+  }
+  .rgTable tbody tr:last-child th,.rgTable tbody tr:last-child td{border-bottom:0;}
+  .rgTable tbody tr{cursor:pointer; -webkit-tap-highlight-color:transparent;}
+  .rgTable tbody tr:active{background:#f2f8f5;}
+  .rgTable tbody tr:focus{outline:none;}
+  .rgTable tbody tr:focus-visible{outline:2px solid var(--accent); outline-offset:-2px;}
+  .rgTable tbody tr.on{background:var(--accent-soft);}
+  .rgName{display:block; font-size:12.5px; font-weight:800; color:var(--ink); letter-spacing:-.01em;}
+  .rgTable tbody tr.on .rgName{color:var(--accent-dark);}
+  .rgMeta{display:block; font-size:10.5px; font-weight:700; color:var(--muted); margin-top:1px; font-variant-numeric:tabular-nums; line-height:1.35;}
+  .rgReg{font-size:11.5px;}
+  .rgReg em{font-style:normal; font-weight:700; color:#39434e;}
+  .rgNote{margin:8px 0 0; font-size:11.5px; color:var(--muted); line-height:1.5; word-break:keep-all;}
+  .rgNote b{color:#39434e; font-weight:700;}
+  @media (max-width:400px){
+    .rgTable{font-size:11.5px;}
+    .rgTable tbody th,.rgTable tbody td{padding:6px 5px;}
+    .rgReg{font-size:11px;}
+  }
+
   /* ---------- facility list ---------- */
   .listTools{display:flex; gap:6px; margin-bottom:4px; flex-wrap:wrap;}
   .listTools .ghost{font-size:12px; padding:8px 10px;}
@@ -366,6 +399,40 @@
         <label class="lbl" for="crs">좌표계</label>
         <select id="crs"></select>
         <p class="hint" id="crsHint"></p>
+
+        <details class="alt regionTable" id="regionBox">
+          <summary>원점별 사용 지역 표 보기</summary>
+          <p class="rgIntro">현장이 어느 원점인지 헷갈릴 때 참고하세요. <b>행을 누르면 그 원점으로 바로 바뀝니다.</b></p>
+          <table class="rgTable">
+            <colgroup><col class="rgC1"><col></colgroup>
+            <thead>
+              <tr><th scope="col">원점</th><th scope="col">주로 쓰는 지역</th></tr>
+            </thead>
+            <tbody id="regionRows">
+              <tr data-epsg="EPSG:5185" tabindex="0" role="button" aria-label="서부원점 EPSG 5185로 선택">
+                <th scope="row"><span class="rgName">서부원점</span><span class="rgMeta">EPSG:5185 · 125°E</span></th>
+                <td class="rgReg">인천 <em>강화·옹진 등 서해 도서</em>, 경기·충남·전북·전남 <em>서해안 일부</em></td>
+              </tr>
+              <tr data-epsg="EPSG:5186" tabindex="0" role="button" aria-label="중부원점 EPSG 5186으로 선택">
+                <th scope="row"><span class="rgName">중부원점</span><span class="rgMeta">EPSG:5186 · 127°E</span></th>
+                <td class="rgReg"><em>서울·인천·경기</em>, 충북·충남·대전·세종, 전북·전남·광주, <em>강원 영서</em>(춘천·원주), 제주</td>
+              </tr>
+              <tr data-epsg="EPSG:5187" tabindex="0" role="button" aria-label="동부원점 EPSG 5187로 선택">
+                <th scope="row"><span class="rgName">동부원점</span><span class="rgMeta">EPSG:5187 · 129°E</span></th>
+                <td class="rgReg"><em>강원 영동</em>(강릉·속초·삼척), <em>경북</em>(안동·포항)·대구, 경남·부산·울산</td>
+              </tr>
+              <tr data-epsg="EPSG:5188" tabindex="0" role="button" aria-label="동해원점 EPSG 5188로 선택">
+                <th scope="row"><span class="rgName">동해원점</span><span class="rgMeta">EPSG:5188 · 131°E</span></th>
+                <td class="rgReg"><em>울릉도·독도</em></td>
+              </tr>
+              <tr data-epsg="EPSG:5179" tabindex="0" role="button" aria-label="통합원점 UTM-K EPSG 5179로 선택">
+                <th scope="row"><span class="rgName">통합원점 (UTM-K)</span><span class="rgMeta">EPSG:5179 · 127.5°E</span></th>
+                <td class="rgReg">전국을 한 장으로 (네이버·카카오 지도, 공공 API)</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="rgNote">원점 경도 ±1°가 적용 범위입니다 — 124~126°E 서부, 126~128°E 중부, 128~130°E 동부, 130~132°E 동해. 경계 지역이거나 기존 도면이 있으면 <b>표제란·성과표의 EPSG 코드</b>를 먼저 확인하세요. 2010년 이전 도면은 중부원점(구) EPSG:5181(북거 500,000)입니다.</p>
+        </details>
 
         <div class="pasteRow">
           <input id="paste" type="text" placeholder="붙여넣기 — 예: X = 201234.56  Y = 543210.12  Z = 34.56" aria-label="좌표 한 줄 붙여넣기">
@@ -779,7 +846,49 @@
     sel.value = settings.crs;
   }
 
+  /* ---------- 원점별 사용 지역 표 ---------- */
+  function syncRegionRows() {
+    var box = $("regionRows");
+    if (!box || !els.crs) return;
+    var rows = box.getElementsByTagName("tr");
+    var cur = els.crs.value;
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].getAttribute("data-epsg") === cur) rows[i].classList.add("on");
+      else rows[i].classList.remove("on");
+    }
+  }
+
+  function chooseCrsFromTable(code) {
+    if (!code) return;
+    if (els.crs.value === code) { toast(crsOf(code).short + "원점이 이미 선택되어 있습니다."); return; }
+    els.crs.value = code;
+    /* 좌표계 select를 직접 바꾼 것과 똑같이 처리 (change 이벤트 재사용) */
+    var ev = document.createEvent("Event");
+    ev.initEvent("change", true, true);
+    els.crs.dispatchEvent(ev);
+    toast(crsOf(code).short + "원점으로 바꿨습니다 · " + code);
+  }
+
+  function bindRegionTable() {
+    var box = $("regionRows");
+    if (!box) return;
+    var rows = box.getElementsByTagName("tr");
+    for (var i = 0; i < rows.length; i++) {
+      (function (row) {
+        row.addEventListener("click", function () { chooseCrsFromTable(row.getAttribute("data-epsg")); });
+        row.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+            e.preventDefault();
+            chooseCrsFromTable(row.getAttribute("data-epsg"));
+          }
+        });
+      })(rows[i]);
+    }
+    syncRegionRows();
+  }
+
   function refreshMode() {
+    syncRegionRows();
     var crs = currentCrs();
     if (crs.geo) {
       els.lblX.innerHTML = "위도 <em>(°, N)</em>";
@@ -1598,6 +1707,7 @@
 
     loadSettings();
     buildCrsSelect();
+    bindRegionTable();
     refreshMode();
     renderList();
     updateGpsView();
