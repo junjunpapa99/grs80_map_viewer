@@ -3,405 +3,482 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f8a5f">
+<meta name="theme-color" content="#0e8a5f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
-<title>현장조사 및 비점오염저감시설 위치 관리 · GRS80 좌표</title>
+<title>현장조사 및 시설물 위치 관리 · GRS80 좌표</title>
 <style>
   :root{
-    --bg:#eef1f5; --card:#ffffff; --ink:#12181f; --muted:#6b7684; --line:#e2e7ee;
-    --accent:#0f8a5f; --accent-dark:#0b6b4a; --accent-soft:#eaf6f0;
+    --bg:#edf0f5; --card:#ffffff; --ink:#0f1720; --muted:#6b7684; --line:#e3e9f0;
+    --accent:#0e8a5f; --accent-dark:#0a6a49; --accent-soft:#e9f6f0; --accent-line:#cfe9dd;
     --warn:#a3570a; --warn-bg:#fff6e9; --warn-line:#f3dfc2;
     --danger:#c0392b; --danger-soft:#fdeeeb;
-    --radius:16px;
+    --kakao:#fee500; --naver:#03c75a;
+    --r:16px; --r2:12px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--bg); color:var(--ink); line-height:1.5;
+    background:var(--bg); color:var(--ink); line-height:1.45;
     font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Helvetica Neue",system-ui,sans-serif;
     -webkit-text-size-adjust:100%;
   }
-  .app{max-width:560px; margin:0 auto; padding:16px 14px calc(30px + env(safe-area-inset-bottom));}
+  .app{max-width:560px; margin:0 auto; padding:14px 12px calc(26px + env(safe-area-inset-bottom));}
+  .hidden{display:none !important;}
+  button{font-family:inherit; cursor:pointer;}
+  .sprite{position:absolute; width:0; height:0; overflow:hidden;}
+  .ic{
+    width:20px; height:20px; display:block; flex:0 0 auto;
+    fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;
+  }
+  .ic.s{width:17px; height:17px; stroke-width:2;}
+  .ic.xs{width:15px; height:15px; stroke-width:2.1;}
 
   /* ---------- header ---------- */
-  .head{margin:2px 4px 14px;}
-  .brand{display:flex; align-items:center; gap:7px; color:var(--accent); font-size:12.5px; font-weight:800; letter-spacing:.02em;}
-  .brand svg{display:block;}
-  h1{font-size:20px; line-height:1.3; margin:6px 0 5px; letter-spacing:-.03em; word-break:keep-all;}
-  .sub{margin:0; font-size:13.5px; color:var(--muted);}
+  .head{display:flex; align-items:flex-start; gap:10px; padding:2px 3px 12px;}
+  .headMain{flex:1 1 auto; min-width:0;}
+  .brand{display:flex; align-items:center; gap:6px; color:var(--accent); font-size:11.5px; font-weight:800; letter-spacing:.03em;}
+  h1{font-size:19px; line-height:1.3; margin:5px 0 0; letter-spacing:-.04em; word-break:keep-all;}
+
+  /* ---------- icons / buttons ---------- */
+  .ibtn{
+    display:inline-flex; align-items:center; justify-content:center; gap:5px;
+    height:40px; min-width:40px; padding:0 9px; border-radius:12px; border:1px solid var(--line);
+    background:#f6f8fb; color:#3d4854; font-size:12.5px; font-weight:800; font-family:inherit;
+  }
+  .ibtn:active{background:#e9eef4;}
+  .ibtn.plain{border-color:transparent; background:transparent; color:#586472;}
+  .ibtn.plain:active{background:#e9eef4;}
+  .ibtn.accent{color:var(--accent-dark); background:var(--accent-soft); border-color:var(--accent-line);}
+  .ibtn.accent:active{background:#ddefe6;}
+  .ibtn.danger{color:var(--danger);}
+  .ibtn.sm{height:36px; min-width:36px; padding:0 8px; border-radius:10px;}
+  .ibtn.round{border-radius:50%; width:40px; padding:0;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px; height:42px; padding:0 13px;
+    border-radius:12px; border:1px solid var(--line); background:#f7f9fb; color:#39434e;
+    font-family:inherit; font-size:13px; font-weight:800; letter-spacing:-.01em;
+  }
+  .btn:active{background:#e9eef4;}
+  .btn.accent{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent-dark);}
+  .btn.primary{
+    background:linear-gradient(180deg,#12996a,#0d7d55); border:0; color:#fff;
+    box-shadow:0 8px 18px rgba(15,138,95,.22); height:48px; font-size:15px; width:100%;
+  }
+  .btn.primary:active{transform:translateY(1px); box-shadow:0 4px 10px rgba(15,138,95,.2);}
+  .btn.wide{width:100%;}
+  .linkBtn{background:none; border:0; padding:7px 2px; font-family:inherit; font-size:12px; font-weight:800; color:var(--muted); display:inline-flex; align-items:center; gap:5px;}
+  .linkBtn.danger{color:var(--danger);}
 
   /* ---------- cards ---------- */
   .card{
-    background:var(--card); border-radius:var(--radius); padding:15px;
-    margin:0 0 12px; box-shadow:0 1px 2px rgba(18,24,31,.06), 0 8px 22px rgba(18,24,31,.05);
+    background:var(--card); border-radius:var(--r); padding:13px; margin:0 0 10px;
+    box-shadow:0 1px 2px rgba(15,23,32,.05), 0 8px 20px rgba(15,23,32,.045);
   }
-  .cardTitle{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px;}
-  .cardTitle h2{font-size:15px; margin:0; letter-spacing:-.01em;}
-  .count{font-size:12.5px; color:var(--muted); font-weight:700;}
-  .hidden{display:none !important;}
+  .cardTitle{display:flex; align-items:center; gap:7px; margin-bottom:9px;}
+  .cardTitle h2{font-size:14px; margin:0; letter-spacing:-.02em; display:flex; align-items:center; gap:6px;}
+  .cardTitle .count{margin-left:auto; font-size:11.5px; color:var(--muted); font-weight:800; font-variant-numeric:tabular-nums;}
 
-  .lbl{display:block; font-size:12.5px; font-weight:800; color:#39434e; margin:0 0 5px;}
-  .hint{font-size:12px; color:var(--muted); margin:7px 0 0; line-height:1.45;}
-  .hint b{color:#39434e; font-weight:700;}
+  /* ---------- GPS strip ---------- */
+  .gpsCard{padding:11px 12px; display:grid; gap:8px;}
+  .gpsTop{display:flex; align-items:center; gap:8px;}
+  .gpsIco{width:30px; height:30px; border-radius:10px; background:var(--accent-soft); color:var(--accent-dark); display:flex; align-items:center; justify-content:center; flex:0 0 auto;}
+  .gpsTitle{font-size:13px; font-weight:800; letter-spacing:-.01em;}
+  .dot{width:8px; height:8px; border-radius:50%; background:#c6cdd6; flex:0 0 auto; transition:background .2s;}
+  .dot.on{background:#12a06a; box-shadow:0 0 0 4px rgba(18,160,106,.15);}
+  .dot.err{background:#e05a4a;}
+  .gpsAcc{margin-left:auto; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; font-weight:700;}
+  .gpsMsg{font-size:11.5px; color:var(--muted); margin:0; line-height:1.42;}
+  .gpsMsg:empty{display:none;}
+  .gpsMsg.err{color:#a4321f; font-weight:700;}
+  .gpsRow{display:flex; gap:6px;}
+  .gpsRow .btn{flex:1 1 0; min-width:0; padding:0 8px;}
+  .gpsCoord{font-size:10.5px; color:#96a1ad; font-variant-numeric:tabular-nums;}
+  .gpsCoord:empty{display:none;}
+
+  /* ---------- selected facility ---------- */
+  .emptyState{text-align:center; padding:10px 4px 8px; color:var(--muted);}
+  .emptyState .ic{width:26px; height:26px; margin:0 auto 6px; color:#c2ccd6;}
+  .emptyState strong{display:block; font-size:13.5px; color:#39434e; letter-spacing:-.01em;}
+  .emptyState p{margin:2px 0 0; font-size:11.5px;}
+
+  .badges{display:flex; gap:5px; flex-wrap:wrap; margin-bottom:7px;}
+  .badge{display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800; letter-spacing:.01em;
+    color:var(--accent-dark); background:var(--accent-soft); border:1px solid var(--accent-line); border-radius:999px; padding:3px 8px;}
+  .badge.sub{color:#4b5663; background:#f3f6f9; border-color:var(--line);}
+  .badge.warnb{color:var(--warn); background:var(--warn-bg); border-color:var(--warn-line);}
+  .facName{font-size:18px; font-weight:800; margin:0; letter-spacing:-.03em; word-break:break-all; line-height:1.3;}
+  .facMemo{font-size:12.5px; color:var(--muted); margin:2px 0 0; word-break:keep-all;}
+  .tPhotos{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;}
+
+  .distBox{
+    display:flex; align-items:center; gap:12px; margin-top:11px; padding:11px 12px;
+    background:linear-gradient(180deg,#f7fbf9,#f0f8f4); border:1px solid #dbeee5; border-radius:14px;
+  }
+  .arrowWrap{width:46px; height:46px; flex:0 0 auto; border-radius:50%; background:#fff;
+    border:1px solid #dbeee5; display:flex; align-items:center; justify-content:center;}
+  .arrow{font-size:22px; line-height:1; color:var(--accent); transition:transform .25s ease;}
+  .distInfo{min-width:0;}
+  .distMain{font-size:25px; font-weight:800; letter-spacing:-.04em; font-variant-numeric:tabular-nums; line-height:1.1;}
+  .distDir{font-size:12.5px; font-weight:800; color:var(--accent-dark); margin-top:1px;}
+  .distSub{font-size:10.5px; color:var(--muted); margin-top:2px; font-variant-numeric:tabular-nums;}
+  .distBox.off{background:#f7f9fb; border-color:var(--line);}
+  .distBox.off .arrowWrap{border-color:var(--line);}
+  .distBox.off .arrow{color:#b9c2cc; font-size:16px;}
+  .distBox.off .distMain{font-size:13.5px; font-weight:800; letter-spacing:-.01em; color:#5b6673;}
+  .distBox.off .distDir{display:none;}
+  .distBox.off .distSub{font-size:10.5px;}
+
+  .coordBox{margin-top:10px; padding:7px 10px; border:1px solid var(--line); border-radius:13px; background:#fbfcfe;}
+  .coordRow{display:flex; align-items:center; gap:8px; padding:1px 0;}
+  .coordRow .k{width:24px; flex:0 0 auto; font-size:10.5px; font-weight:800; color:var(--muted);}
+  .coordRow .v{flex:1 1 auto; min-width:0; font-size:15.5px; font-weight:800; letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums; text-align:right; word-break:break-all;}
+  .dms{font-size:10.5px; color:#96a1ad; text-align:right; font-variant-numeric:tabular-nums; padding-top:1px;}
+  .meta{font-size:11px; color:#4b5663; font-variant-numeric:tabular-nums; line-height:1.5;}
+  .meta div{margin:1px 0;}
+
+  .mapGrid{display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:10px;}
+  .mapTile{
+    display:flex; align-items:center; gap:7px; height:44px; padding:0 9px; border-radius:12px;
+    text-decoration:none; font-size:12.5px; font-weight:800; letter-spacing:-.01em; line-height:1.1;
+    border:1px solid var(--line); background:#f8fafc; color:#39434e; min-width:0;
+  }
+  .mapTile:active{background:#eef2f7;}
+  .brandDot{width:22px; height:22px; border-radius:7px; display:flex; align-items:center; justify-content:center;
+    font-size:11.5px; font-weight:900; flex:0 0 auto;}
+  .mapTile.kakao .brandDot{background:var(--kakao); color:#1a1700;}
+  .mapTile.naver .brandDot{background:var(--naver); color:#fff;}
+  .mapTile span.mt{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+  .cardActs{display:flex; gap:6px; margin-top:9px;}
+  .cardActs .btn{flex:1 1 0; padding:0 6px;}
+  .cardActs #manageRow{display:flex; flex:1 1 0; min-width:0;}
+  .cardActs #manageRow .btn{width:100%;}
+
+  details.fold{margin-top:9px; border:1px solid var(--line); border-radius:12px; background:#fbfcfe; overflow:hidden;}
+  details.fold > summary{
+    list-style:none; cursor:pointer; display:flex; align-items:center; gap:7px;
+    padding:10px 11px; font-size:12px; font-weight:800; color:#4b5663; letter-spacing:-.01em;
+  }
+  details.fold > summary::-webkit-details-marker{display:none;}
+  details.fold > summary .chev{margin-left:auto; transition:transform .15s ease;}
+  details.fold[open] > summary .chev{transform:rotate(180deg);}
+  .foldBody{padding:0 11px 11px;}
+  .altList{font-size:11.5px; color:#4b5663;}
+  .altList div{padding:3px 0; border-bottom:1px dotted var(--line); font-variant-numeric:tabular-nums;}
+  .altList div:last-child{border-bottom:0;}
+  .altList span.c{display:inline-block; min-width:64px; font-weight:800; color:#39434e;}
+
+  /* 원점별 사용 지역 표 */
+  .rgIntro{margin:0 0 6px; font-size:11px; color:var(--muted); line-height:1.45;}
+  .rgTable{width:100%; border-collapse:collapse; table-layout:fixed; font-size:11.5px; color:#39434e;}
+  .rgTable col.rgC1{width:37%;}
+  .rgTable thead th{font-size:10px; font-weight:800; color:var(--muted); letter-spacing:.02em;
+    text-align:left; padding:0 5px 5px; border-bottom:1px solid #d8dfe7;}
+  .rgTable tbody th,.rgTable tbody td{text-align:left; vertical-align:top; font-weight:400; padding:6px 5px;
+    border-bottom:1px solid var(--line); line-height:1.4; word-break:keep-all; overflow-wrap:anywhere;}
+  .rgTable tbody tr:last-child th,.rgTable tbody tr:last-child td{border-bottom:0;}
+  .rgTable tbody tr{cursor:pointer;}
+  .rgTable tbody tr:active{background:#f2f8f5;}
+  .rgTable tbody tr.on{background:var(--accent-soft);}
+  .rgName{display:block; font-size:12px; font-weight:800; color:var(--ink); letter-spacing:-.01em;}
+  .rgTable tbody tr.on .rgName{color:var(--accent-dark);}
+  .rgMeta{display:block; font-size:10px; font-weight:700; color:var(--muted); margin-top:1px; font-variant-numeric:tabular-nums;}
+  .rgReg{font-size:11px;}
+  .rgReg em{font-style:normal; font-weight:800; color:#39434e;}
+  .rgNote{margin:7px 0 0; font-size:10.5px; color:var(--muted); line-height:1.5; word-break:keep-all;}
+  .rgNote b{color:#39434e; font-weight:800;}
+
+  /* ---------- list ---------- */
+  .tools{display:flex; gap:5px; align-items:center;}
+  .tools .ibtn{flex:0 0 auto;}
+  .sortBtn{flex:0 0 auto; padding:0 10px; gap:5px; font-size:11.5px;}
+  .importBtnWrap{position:relative; overflow:hidden; display:inline-flex;}
+  .importBtnWrap input[type=file]{position:absolute; inset:0; opacity:0; font-size:100px; cursor:pointer;}
+  .spaceInfo{margin:6px 0 0; font-size:10px; color:#93a0ac; text-align:right; font-variant-numeric:tabular-nums;}
+  .spaceInfo:empty{display:none;}
+  .spaceInfo.near{color:var(--warn); font-weight:800;}
+
+  .chips{display:flex; gap:5px; overflow-x:auto; margin:9px -13px 2px; padding:1px 13px 6px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{flex:0 0 auto; display:inline-flex; align-items:center; gap:5px; padding:8px 11px; font-size:12px; font-weight:800;
+    border-radius:999px; border:1px solid var(--line); background:#fff; color:#4b5663; white-space:nowrap; font-family:inherit;}
+  .chip .n{font-weight:800; color:#9aa5b1; font-variant-numeric:tabular-nums; font-size:11px;}
+  .chip.on{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent-dark);}
+  .chip.on .n{color:var(--accent-dark);}
+  .chip:active{background:#eef2f7;}
+
+  .histList{list-style:none; margin:0; padding:0;}
+  .fgroup{list-style:none;}
+  .fgHead{display:flex; align-items:center; gap:7px; width:100%; text-align:left; padding:9px 10px; margin:6px 0 0;
+    background:#f5f8fb; border:1px solid var(--line); border-radius:11px; font-family:inherit;
+    font-size:12.5px; font-weight:800; color:#39434e; letter-spacing:-.01em;}
+  .fgHead:active{background:#eaeff5;}
+  .fgHead .fic{color:#7f8b98;}
+  .fgHead .fn{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .fgHead .fcount{flex:0 0 auto; font-size:10.5px; font-weight:800; color:var(--muted); background:#fff;
+    border:1px solid var(--line); border-radius:999px; padding:1px 7px; font-variant-numeric:tabular-nums;}
+  .fgHead .chev{flex:0 0 auto; color:#94a0ac; transition:transform .15s ease;}
+  .fgroup.closed .fgHead .chev{transform:rotate(-90deg);}
+  .fgroup.closed .groupItems{display:none;}
+  .groupItems{list-style:none; margin:0; padding:0;}
+  .fgEmpty{font-size:11px; color:var(--muted); padding:7px 4px 3px; line-height:1.45; word-break:keep-all;}
+
+  .item{display:flex; gap:9px; align-items:center; padding:9px 1px; border-bottom:1px solid var(--line);}
+  .item:last-child{border-bottom:0;}
+  .item.selected{background:#f5fbf8;}
+  .itemMain{flex:1 1 auto; min-width:0; display:flex; gap:9px; align-items:center; background:none; border:0; padding:0; text-align:left; font-family:inherit; color:inherit;}
+  .thumbL{width:46px; height:46px; flex:0 0 auto; border-radius:11px; position:relative; overflow:hidden;
+    border:1px solid var(--line); background:#f3f6f9; display:flex; align-items:center; justify-content:center;}
+  .thumbL img{width:100%; height:100%; object-fit:cover; display:block;}
+  .thumbL .ph{color:#c3ccd6;}
+  .thumbL .n{position:absolute; right:0; bottom:0; font-size:9px; font-weight:800; color:#fff;
+    background:rgba(15,23,32,.62); padding:0 4px; border-radius:6px 0 0 0; line-height:14px;}
+  .itemBody{flex:1 1 auto; min-width:0;}
+  .itemTop{display:flex; align-items:center; gap:6px;}
+  .itemName{font-size:14px; font-weight:800; letter-spacing:-.02em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
+  .itemDist{margin-left:auto; flex:0 0 auto; font-size:10.5px; font-weight:800; color:var(--accent-dark);
+    background:var(--accent-soft); border-radius:999px; padding:2px 7px; font-variant-numeric:tabular-nums;}
+  .itemSub{display:flex; align-items:center; gap:5px; margin-top:1px; min-width:0;}
+  .itemMemo{font-size:11px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
+  .itemCrs{flex:0 0 auto; font-size:9.5px; font-weight:800; color:#7c8794; background:#f1f5f9; border-radius:6px; padding:1px 5px;}
+  .itemActs{display:grid; grid-template-columns:repeat(2, 36px); gap:1px; flex:0 0 auto; align-self:center;}
+  .itemBtn{width:36px; height:36px; display:flex; align-items:center; justify-content:center; padding:0;
+    background:none; border:0; border-radius:9px; color:#9aa5b1; font-family:inherit;}
+  .itemBtn:active{background:#eef2f7; color:var(--accent-dark);}
+  .itemBtn.del:active{color:var(--danger); background:var(--danger-soft);}
+
+  .editForm{padding:9px 0 4px; display:grid; gap:6px; width:100%;}
+  .editForm .row{display:flex; gap:6px;}
+  .editForm .row .btn{flex:1 1 0; padding:0 6px;}
+
+  .emptyBox{font-size:11.5px; color:var(--muted); padding:6px 2px 2px; line-height:1.5;}
+  .listFoot{display:flex; justify-content:flex-end; margin-top:4px;}
+
+  /* ---------- input form ---------- */
+  details#addCard{background:var(--card); border-radius:var(--r); margin:0 0 10px; overflow:hidden;
+    box-shadow:0 1px 2px rgba(15,23,32,.05), 0 8px 20px rgba(15,23,32,.045);}
+  details#addCard > summary{list-style:none; cursor:pointer; padding:13px; font-size:13.5px; font-weight:800;
+    letter-spacing:-.01em; display:flex; align-items:center; gap:7px;}
+  details#addCard > summary::-webkit-details-marker{display:none;}
+  details#addCard > summary .plus{color:var(--accent);}
+  details#addCard > summary .st{margin-left:auto; font-size:10.5px; font-weight:800; color:var(--accent-dark);
+    background:var(--accent-soft); border-radius:999px; padding:2px 8px;}
+  details#addCard > summary .st:empty{display:none;}
+  details#addCard > summary .chev{margin-left:auto; color:#94a0ac; transition:transform .15s ease;}
+  details#addCard > summary .st + .chev{margin-left:6px;}
+  details#addCard[open] > summary .chev{transform:rotate(180deg);}
+  .addBody{padding:0 13px 13px;}
+
+  .crsLine{display:flex; gap:6px; align-items:stretch; margin-top:2px;}
+  .crsLine select{flex:1 1 auto; min-width:0;}
+
+  .pasteRow{display:flex; gap:6px; margin-top:8px;}
+  .pasteWrap{flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:6px;
+    border:1px solid var(--line); border-radius:12px; background:#fbfcfd; padding-left:9px; color:#9aa5b1;}
+  .pasteWrap input{flex:1 1 auto; min-width:0; border:0; background:transparent; padding:11px 9px 11px 0; font-size:13.5px;}
+  .pasteWrap input:focus{outline:none;}
 
   select,input[type=text]{
-    width:100%; padding:13px 12px; font-size:16px; color:var(--ink);
-    background:#fbfcfd; border:1px solid var(--line); border-radius:12px; font-family:inherit;
+    width:100%; padding:12px 11px; font-size:15px; color:var(--ink); font-family:inherit;
+    background:#fbfcfd; border:1px solid var(--line); border-radius:12px;
     appearance:none; -webkit-appearance:none;
   }
   select{
     background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%236b7684' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:right 14px center; padding-right:38px;
+    background-repeat:no-repeat; background-position:right 12px center; padding-right:34px;
+    font-size:14px;
   }
-  select:focus,input[type=text]:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(15,138,95,.14); background:#fff;}
+  select:focus,input[type=text]:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(14,138,95,.13); background:#fff;}
 
-  button{font-family:inherit; cursor:pointer;}
-  .primary{
-    display:block; width:100%; padding:16px; font-size:16.5px; font-weight:800; letter-spacing:-.01em;
-    color:#fff; background:linear-gradient(180deg,#12996a,#0d7d55); border:0; border-radius:14px;
-    box-shadow:0 8px 18px rgba(15,138,95,.24);
-  }
-  .primary:active{transform:translateY(1px); box-shadow:0 4px 10px rgba(15,138,95,.22);}
-  .ghost{
-    padding:11px 13px; font-size:13.5px; font-weight:700; color:#39434e; background:#f2f5f8;
-    border:1px solid var(--line); border-radius:12px;
-  }
-  .ghost:active{background:#e8edf2;}
-  .ghost.accent{color:var(--accent-dark); background:var(--accent-soft); border-color:#cfe9dd;}
-  .linkBtn{background:none; border:0; padding:6px 2px; font-size:12.5px; font-weight:700; color:var(--muted);}
-  .linkBtn.danger{color:var(--danger);}
+  .crsHint{margin:5px 0 0; font-size:10.5px; color:#96a1ad; font-variant-numeric:tabular-nums;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 
-  /* ---------- gps ---------- */
-  .gpsCard{padding:13px 15px;}
-  .gpsTop{display:flex; align-items:center; gap:8px;}
-  .dot{width:9px; height:9px; border-radius:50%; background:#c3cad3; flex:0 0 auto; transition:background .2s;}
-  .dot.on{background:#12a06a; box-shadow:0 0 0 4px rgba(18,160,106,.16); animation:pulse 2s infinite;}
-  .dot.err{background:#e05a4a;}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(18,160,106,.18);}50%{box-shadow:0 0 0 6px rgba(18,160,106,.06);}}
-  .gpsTitle{font-size:13.5px; font-weight:800;}
-  .gpsAcc{margin-left:auto; font-size:12.5px; color:var(--muted); font-variant-numeric:tabular-nums;}
-  .gpsMsg{font-size:12.5px; color:var(--muted); margin:6px 0 0; line-height:1.45;}
-  .gpsMsg.err{color:#a4321f;}
-  .gpsRow{display:flex; gap:6px; margin-top:9px;}
-  .gpsRow .ghost{flex:1 1 0; text-align:center; padding:10px 8px; font-size:12.5px;}
-  .gpsCoord{font-size:11.5px; color:#8d97a2; margin-top:7px; font-variant-numeric:tabular-nums;}
-
-  /* ---------- selected facility ---------- */
-  .badges{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;}
-  .badge{font-size:11.5px; font-weight:800; letter-spacing:.01em; color:var(--accent-dark); background:var(--accent-soft); border:1px solid #cfe9dd; border-radius:999px; padding:4px 9px;}
-  .badge.sub{color:#4b5663; background:#f2f5f8; border-color:var(--line);}
-  .badge.warnb{color:var(--warn); background:var(--warn-bg); border-color:var(--warn-line);}
-  .facName{font-size:19px; font-weight:800; margin:0; letter-spacing:-.02em; word-break:break-all;}
-  .facMemo{font-size:13px; color:var(--muted); margin:3px 0 0;}
-
-  .distBox{
-    display:flex; align-items:center; gap:14px; margin:13px 0 0; padding:13px;
-    background:linear-gradient(180deg,#f7fbf9,#f0f8f4); border:1px solid #dbeee5; border-radius:14px;
-  }
-  .arrowWrap{
-    width:52px; height:52px; flex:0 0 auto; border-radius:50%; background:#fff;
-    border:1px solid #dbeee5; display:flex; align-items:center; justify-content:center;
-    box-shadow:0 2px 6px rgba(15,138,95,.08);
-  }
-  .arrow{font-size:26px; line-height:1; color:var(--accent); transition:transform .25s ease; transform-origin:50% 50%;}
-  .distMain{font-size:26px; font-weight:800; letter-spacing:-.03em; font-variant-numeric:tabular-nums; line-height:1.15;}
-  .distDir{font-size:13.5px; font-weight:700; color:var(--accent-dark); margin-top:1px;}
-  .distSub{font-size:11.5px; color:var(--muted); margin-top:3px; font-variant-numeric:tabular-nums;}
-  .distBox.off{background:#f7f9fb; border-color:var(--line); align-items:flex-start;}
-  .distBox.off .arrow{color:#b6bfc9; font-size:20px; margin-top:3px;}
-  .distBox.off .distMain{font-size:14.5px; font-weight:700; letter-spacing:0;}
-
-  .coordRows{margin-top:12px; padding-top:11px; border-top:1px solid var(--line);}
-  .coordRow{display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:2px 0;}
-  .coordRow .k{font-size:12.5px; font-weight:700; color:var(--muted); flex:0 0 auto;}
-  .coordRow .v{font-size:19px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; text-align:right; word-break:break-all;}
-  .dms{font-size:11.5px; color:var(--muted); margin-top:4px; font-variant-numeric:tabular-nums;}
-  .meta{font-size:12px; color:#4b5663; margin-top:9px; padding-top:9px; border-top:1px dashed var(--line); font-variant-numeric:tabular-nums;}
-  .meta div{margin:2px 0;}
-
-  .actions4{display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-top:13px;}
-  .mapBtn{
-    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
-    padding:12px 6px; font-size:14px; font-weight:800; border-radius:13px; text-decoration:none;
-    letter-spacing:-.01em; line-height:1.25; border:0;
-  }
-  .mapBtn small{font-size:10.5px; font-weight:700; opacity:.72; letter-spacing:0; margin-top:1px;}
-  .mapBtn.kakao{background:#fee500; color:#1a1700; box-shadow:0 6px 14px rgba(254,229,0,.3);}
-  .mapBtn.naver{background:#03c75a; color:#fff; box-shadow:0 6px 14px rgba(3,199,90,.26);}
-  .mapBtn:active{transform:translateY(1px);}
-  .rowBtns{display:flex; gap:7px; margin-top:8px;}
-  .rowBtns .ghost{flex:1 1 0; text-align:center; font-size:12.5px; padding:10px 6px;}
-
-  details.alt{margin-top:11px; border-top:1px solid var(--line); padding-top:9px;}
-  details.alt summary{font-size:12.5px; font-weight:700; color:#4b5663; cursor:pointer; list-style:none;}
-  details.alt summary::-webkit-details-marker{display:none;}
-  details.alt summary::before{content:"▸ "; color:var(--muted);}
-  details.alt[open] summary::before{content:"▾ ";}
-  .altList{margin-top:7px; font-size:12px; color:#4b5663;}
-  .altList div{padding:3px 0; border-bottom:1px dotted var(--line); font-variant-numeric:tabular-nums;}
-  .altList div:last-child{border-bottom:0;}
-  .altList span.c{display:inline-block; min-width:74px; font-weight:700; color:#39434e;}
-
-  /* 원점별 사용 지역 표 */
-  details.alt.regionTable{margin-top:10px;}
-  .rgIntro{font-size:11.5px; color:var(--muted); margin:7px 0 0; line-height:1.45;}
-  .rgTable{width:100%; border-collapse:collapse; table-layout:fixed; margin-top:8px; font-size:12px; color:#39434e;}
-  .rgTable col.rgC1{width:37%;}
-  .rgTable thead th{
-    font-size:10.5px; font-weight:800; color:var(--muted); letter-spacing:.02em;
-    text-align:left; padding:0 6px 6px; border-bottom:1px solid #d8dfe7;
-  }
-  .rgTable tbody th,.rgTable tbody td{
-    text-align:left; vertical-align:top; font-weight:400; padding:7px 6px;
-    border-bottom:1px solid var(--line); line-height:1.4;
-    word-break:keep-all; overflow-wrap:anywhere;
-  }
-  .rgTable tbody tr:last-child th,.rgTable tbody tr:last-child td{border-bottom:0;}
-  .rgTable tbody tr{cursor:pointer; -webkit-tap-highlight-color:transparent;}
-  .rgTable tbody tr:active{background:#f2f8f5;}
-  .rgTable tbody tr:focus{outline:none;}
-  .rgTable tbody tr:focus-visible{outline:2px solid var(--accent); outline-offset:-2px;}
-  .rgTable tbody tr.on{background:var(--accent-soft);}
-  .rgName{display:block; font-size:12.5px; font-weight:800; color:var(--ink); letter-spacing:-.01em;}
-  .rgTable tbody tr.on .rgName{color:var(--accent-dark);}
-  .rgMeta{display:block; font-size:10.5px; font-weight:700; color:var(--muted); margin-top:1px; font-variant-numeric:tabular-nums; line-height:1.35;}
-  .rgReg{font-size:11.5px;}
-  .rgReg em{font-style:normal; font-weight:700; color:#39434e;}
-  .rgNote{margin:8px 0 0; font-size:11.5px; color:var(--muted); line-height:1.5; word-break:keep-all;}
-  .rgNote b{color:#39434e; font-weight:700;}
-  @media (max-width:400px){
-    .rgTable{font-size:11.5px;}
-    .rgTable tbody th,.rgTable tbody td{padding:6px 5px;}
-    .rgReg{font-size:11px;}
-  }
-
-  /* ---------- facility list ---------- */
-  .listTools{display:flex; gap:6px; margin-bottom:4px; flex-wrap:wrap;}
-  .listTools .ghost{font-size:12px; padding:8px 10px;}
-
-  /* ---------- 폴더(현장) ---------- */
-  .chips{display:flex; gap:6px; overflow-x:auto; margin:2px -15px 3px; padding:2px 15px 7px;
-    -webkit-overflow-scrolling:touch; scrollbar-width:none;}
-  .chips::-webkit-scrollbar{display:none;}
-  .chip{flex:0 0 auto; display:inline-flex; align-items:baseline; padding:8px 12px; font-size:12.5px; font-weight:800;
-    border-radius:999px; border:1px solid var(--line); background:#fff; color:#4b5663; white-space:nowrap; line-height:1.2;}
-  .chip .n{margin-left:5px; font-weight:700; color:var(--muted); font-variant-numeric:tabular-nums;}
-  .chip.on{background:var(--accent-soft); border-color:#cfe9dd; color:var(--accent-dark);}
-  .chip.on .n{color:var(--accent-dark);}
-  .chip:active{background:#eef2f6;}
-  .fgroup{list-style:none;}
-  .fgHead{display:flex; align-items:center; gap:7px; width:100%; text-align:left; padding:10px 11px; margin:7px 0 0;
-    background:#f7f9fb; border:1px solid var(--line); border-radius:11px;
-    font-size:13px; font-weight:800; color:#39434e; letter-spacing:-.01em;}
-  .fgHead:active{background:#eef2f6;}
-  .fgHead .fv{flex:0 0 auto; font-size:9px; color:var(--muted); transition:transform .15s ease;}
-  .fgHead .fn{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .fgHead .fcount{flex:0 0 auto; font-size:11px; font-weight:700; color:var(--muted); background:#fff;
-    border:1px solid var(--line); border-radius:999px; padding:2px 8px; font-variant-numeric:tabular-nums;}
-  .fgroup.closed .fgHead .fv{transform:rotate(-90deg);}
-  .fgroup.closed .groupItems{display:none;}
-  .groupItems{list-style:none; margin:0; padding:0;}
-  .fgEmpty{font-size:11.5px; color:var(--muted); padding:8px 4px 4px; line-height:1.45; word-break:keep-all;}
-  .folderPick{display:flex; gap:7px; align-items:stretch;}
-  .folderPick select{flex:1 1 auto; min-width:0;}
-  .folderPick .mini{flex:0 0 auto; white-space:nowrap; font-size:12.5px; padding:0 12px;}
-  .folderNew{display:grid; gap:7px; padding:10px; background:#f7f9fb; border:1px solid var(--line); border-radius:12px; margin-top:7px;}
-  .folderNew input{font-size:15px; padding:11px;}
-  .folderNewBtns{display:flex; gap:6px;}
-  .folderNewBtns .ghost{flex:1 1 0; text-align:center; font-size:12.5px; padding:9px 6px;}
-  .folderMgrList{max-height:42vh; overflow-y:auto; -webkit-overflow-scrolling:touch;}
-  .mgrRow{display:grid; gap:7px; padding:9px 0; border-bottom:1px solid var(--line);}
-  .mgrRow:last-child{border-bottom:0;}
-  .mgrInfo{display:flex; align-items:baseline; gap:8px; min-width:0;}
-  .mgrName{font-size:13.5px; font-weight:800; letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .mgrCount{margin-left:auto; font-size:11.5px; font-weight:700; color:var(--muted); flex:0 0 auto; font-variant-numeric:tabular-nums;}
-  .mgrActs{display:flex; gap:6px;}
-  .mgrActs .ghost{flex:1 1 0; text-align:center; font-size:12px; padding:8px 6px;}
-  .mgrActs .ghost.danger{color:var(--danger);}
-  .mgrInput{font-size:14px; padding:10px;}
-  .moveList{display:grid; gap:6px; max-height:52vh; overflow-y:auto; -webkit-overflow-scrolling:touch;}
-  .moveOpt{width:100%; text-align:left; padding:12px 13px; font-size:13.5px;}
-  .moveOpt.on{background:var(--accent-soft); border-color:#cfe9dd; color:var(--accent-dark); font-weight:800;}
-  .histList{list-style:none; margin:0; padding:0;}
-  .item{display:flex; align-items:stretch; gap:4px; border-bottom:1px solid var(--line);}
-  .item:last-child{border-bottom:0;}
-  .itemMain{flex:1 1 auto; min-width:0; text-align:left; background:none; border:0; padding:11px 2px;}
-  .itemMain:active{background:#f7f9fb;}
-  .itemTop{display:flex; align-items:baseline; gap:7px;}
-  .itemName{font-size:14.5px; font-weight:800; letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .itemDist{margin-left:auto; font-size:12.5px; font-weight:800; color:var(--accent-dark); flex:0 0 auto; font-variant-numeric:tabular-nums;}
-  .itemSub{font-size:11.5px; color:var(--muted); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .itemBtn{flex:0 0 auto; width:34px; background:none; border:0; color:#a9b2bc; font-size:14px; padding:0 2px;}
-  .itemBtn.move:active{color:var(--accent-dark);}
-  .itemBtn.del:active{color:var(--danger);}
-  .itemBtn.edit:active{color:var(--accent-dark);}
-  .item.selected{background:#f6fbf8;}
-  .item.selected .itemName{color:var(--accent-dark);}
-
-  .editForm{padding:10px 2px; display:grid; gap:6px; width:100%;}
-  .editForm .row{display:flex; gap:6px;}
-  .editForm input{font-size:14px; padding:10px;}
-  .editForm .row .ghost{flex:1 1 0; font-size:12.5px; padding:10px 6px;}
-
-  .emptyBox{font-size:12.5px; color:var(--muted); padding:6px 2px 2px; line-height:1.5;}
-  .emptyBig{text-align:center; padding:10px 4px 6px;}
-  .emptyBig strong{display:block; font-size:15px; margin-bottom:4px;}
-  .emptyBig p{margin:0; font-size:12.5px; color:var(--muted);}
-
-  .importBtnWrap{position:relative; overflow:hidden; display:inline-flex;}
-  .importBtnWrap input[type=file]{position:absolute; inset:0; opacity:0; font-size:100px; cursor:pointer;}
-
-  /* ---------- input form ---------- */
-  details#addCard{background:var(--card); border-radius:var(--radius); margin:0 0 12px; box-shadow:0 1px 2px rgba(18,24,31,.06), 0 8px 22px rgba(18,24,31,.05); overflow:hidden;}
-  details#addCard > summary{
-    list-style:none; cursor:pointer; padding:15px; font-size:14.5px; font-weight:800; letter-spacing:-.01em;
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
-  }
-  details#addCard > summary::-webkit-details-marker{display:none;}
-  details#addCard > summary::after{content:"＋"; font-size:17px; color:var(--accent); font-weight:700;}
-  details#addCard[open] > summary::after{content:"－";}
-  details#addCard > summary .st{font-size:12px; font-weight:700; color:var(--muted); margin-left:auto; margin-right:6px;}
-  .addBody{padding:0 15px 15px;}
-
-  .pasteRow{display:flex; gap:7px; margin:12px 0 3px;}
-  .pasteRow input{flex:1 1 auto; min-width:0; font-size:14px; padding:11px;}
-  .mini{flex:0 0 auto; padding:0 14px; font-size:13px; font-weight:800; color:var(--accent-dark); background:var(--accent-soft); border:1px solid #cfe9dd; border-radius:12px;}
-
-  .fields{display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-top:12px;}
+  .fields{display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:11px;}
   .field{min-width:0;}
-  .field label{display:block; font-size:12px; font-weight:800; color:#39434e; margin:0 0 4px;}
-  .field label em{font-style:normal; font-weight:600; color:var(--muted);}
-  .field input{font-variant-numeric:tabular-nums; font-size:15px; padding:12px 9px;}
-  @media (max-width:400px){
-    .fields{grid-template-columns:1fr 1fr;}
-    .field.z{grid-column:1 / -1;}
-  }
-  .swapRow{display:flex; align-items:center; gap:9px; margin:10px 0 0; flex-wrap:wrap;}
-  .swapState{font-size:12px; color:var(--muted);}
+  .field label{display:block; font-size:10.5px; font-weight:800; color:#5b6673; margin:0 0 3px; padding-left:2px;}
+  .field label em{font-style:normal; font-weight:700; color:#9aa5b1;}
+  .field input{font-variant-numeric:tabular-nums; font-size:14.5px; padding:12px 8px; text-align:center;}
+  .swapRow{display:flex; align-items:center; gap:8px; margin-top:8px;}
+  .swapState{font-size:10.5px; color:var(--muted); font-variant-numeric:tabular-nums;}
   .swapState.on{color:var(--accent-dark); font-weight:800;}
 
-  .nameRow{margin-top:14px; padding-top:13px; border-top:1px dashed var(--line); display:grid; gap:7px;}
-  .nameRow .two{display:grid; grid-template-columns:1fr 1fr; gap:7px;}
+  .nameRow{margin-top:11px; display:grid; gap:6px;}
+  .inputWrap{display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:12px;
+    background:#fbfcfd; padding-left:10px; color:#9aa5b1;}
+  .inputWrap:focus-within{border-color:var(--accent); box-shadow:0 0 0 3px rgba(14,138,95,.13); background:#fff;}
+  .inputWrap input{flex:1 1 auto; min-width:0; border:0; background:transparent; padding:12px 10px 12px 0; font-size:14.5px;}
+  .inputWrap input:focus{outline:none; box-shadow:none; background:transparent;}
+  .folderPick{display:flex; gap:6px; align-items:stretch;}
+  .folderPick .iw{flex:1 1 auto; min-width:0; display:flex; align-items:center; gap:8px;
+    border:1px solid var(--line); border-radius:12px; background:#fbfcfd; padding-left:10px; color:#9aa5b1;}
+  .folderPick select{flex:1 1 auto; min-width:0; border:0; background-color:transparent; padding:12px 26px 12px 0;
+    background-position:right 8px center; font-size:13.5px;}
+  .folderPick select:focus{outline:none; box-shadow:none; background-color:transparent;}
+  .folderNew{display:grid; gap:6px; padding:9px; background:#f5f8fb; border:1px solid var(--line); border-radius:12px;}
+  .folderNew input{font-size:14px; padding:10px; background:#fff;}
+  .folderNewBtns{display:flex; gap:6px;}
+  .folderNewBtns .btn{flex:1 1 0;}
 
-  .err,.warn{margin:11px 0 0; padding:10px 12px; font-size:12.5px; border-radius:11px; line-height:1.45;}
+  .photoBlock{margin-top:11px; padding-top:10px; border-top:1px solid var(--line);}
+  .photoBlock.flat{margin-top:6px; padding-top:0; border-top:0;}
+  .photoHead{display:flex; align-items:center; gap:6px; margin-bottom:6px; color:#5b6673;}
+  .photoHead .lbl{font-size:11px; font-weight:800; letter-spacing:-.01em;}
+  .photoHead .lbl em{font-style:normal; font-weight:700; color:#9aa5b1;}
+  .photoCount{margin-left:auto; font-size:11px; font-weight:800; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .photoRow{display:flex; flex-wrap:wrap; gap:6px; align-items:flex-start;}
+  .photoPick{position:relative; overflow:hidden; display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    height:40px; padding:0 13px; font-size:12.5px; font-weight:800; color:var(--accent-dark);
+    background:var(--accent-soft); border:1px dashed #bfe2d3; border-radius:11px; margin-top:6px;}
+  .photoPick:active{background:#ddefe6;}
+  .photoPick input[type=file]{position:absolute; inset:0; opacity:0; font-size:100px; cursor:pointer;}
+  .photoPick.busy{opacity:.5;}
+  .thumb{position:relative; flex:0 0 auto; line-height:0;}
+  .thumb img{display:block; width:64px; height:64px; object-fit:cover; border-radius:10px; border:1px solid var(--line); background:#f2f5f8;}
+  .thumb .x{position:absolute; top:-7px; right:-7px; width:24px; height:24px; padding:0; border-radius:50%;
+    border:1px solid #d7dde4; background:#fff; color:#5a6672; font-size:10px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(15,23,32,.16);}
+  .thumb .x:active{background:var(--danger-soft); color:var(--danger);}
+  .tPhotos .thumb img{width:72px; height:72px;}
+
+  .goRow{display:grid; gap:6px; margin-top:12px;}
+  .err,.warn{margin:9px 0 0; padding:9px 11px; font-size:11.5px; border-radius:11px; line-height:1.45;}
   .err{color:#8c2b1e; background:var(--danger-soft); border:1px solid #f7d4cd;}
   .warn{color:var(--warn); background:var(--warn-bg); border:1px solid var(--warn-line);}
 
-  footer{font-size:11px; color:#8d97a2; text-align:center; line-height:1.6; margin-top:8px; word-break:keep-all;}
-  footer b{color:#6b7684;}
+  footer{font-size:10.5px; color:#93a0ac; text-align:center; line-height:1.6; margin-top:6px; word-break:keep-all;
+    display:flex; flex-direction:column; align-items:center; gap:1px;}
+  footer .fb{display:inline-flex; align-items:center; gap:5px; font-weight:800; color:#7c8794;}
 
-  /* ---------- share ---------- */
-  .secLabel{font-size:11.5px; font-weight:800; color:var(--muted); margin:14px 0 6px; letter-spacing:.02em;}
-  .shareGrid{display:grid; grid-template-columns:1fr 1fr; gap:7px;}
-  .shareGrid .ghost{text-align:center; font-size:12.5px; padding:11px 6px;}
-  .shareGrid .wide{grid-column:1 / -1;}
-  .itemBtn.share{font-size:15px; color:#74808d;}
-  .itemBtn.share:active{color:var(--accent-dark);}
-
+  /* ---------- sheets ---------- */
   .sheetWrap{position:fixed; inset:0; z-index:70; display:flex; align-items:flex-end; justify-content:center;}
   .sheetBackdrop{position:absolute; inset:0; background:rgba(12,18,24,.44);}
-  .sheet{
-    position:relative; width:100%; max-width:560px; background:#fff; border-radius:18px 18px 0 0;
-    padding:15px 15px calc(16px + env(safe-area-inset-bottom)); box-shadow:0 -10px 34px rgba(0,0,0,.2);
-    animation:sheetUp .18s ease-out;
-  }
+  .sheet{position:relative; width:100%; max-width:560px; background:#fff; border-radius:18px 18px 0 0;
+    padding:13px 13px calc(15px + env(safe-area-inset-bottom)); box-shadow:0 -10px 34px rgba(0,0,0,.2);
+    animation:sheetUp .18s ease-out; max-height:88vh; overflow-y:auto;}
   @keyframes sheetUp{from{transform:translateY(16px); opacity:.5;} to{transform:none; opacity:1;}}
-  .sheetHead{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:11px;}
-  .sheetHead strong{font-size:14.5px; letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .sheetHead button{background:none; border:0; font-size:13px; font-weight:800; color:var(--muted); padding:4px 2px;}
-  .sheetList{display:grid; gap:7px;}
-  .sheetList .ghost{width:100%; text-align:left; padding:13px 14px; font-size:13.5px;}
-  .sheetPreview{
-    margin-top:10px; padding:10px; background:#f7f9fb; border:1px solid var(--line); border-radius:10px;
-    font-size:11.5px; line-height:1.5; color:#4b5663; white-space:pre-wrap;
-    overflow-wrap:anywhere; word-break:break-all;
-    max-height:118px; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
-  }
+  .sheetHead{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .sheetHead strong{font-size:14px; letter-spacing:-.02em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1 1 auto;}
+  .sheetHead button{background:none; border:0; font-family:inherit; font-size:11.5px; font-weight:800; color:var(--muted); padding:6px 2px;}
+  .sheetList{display:grid; gap:5px;}
+  .sheetOpt{display:flex; align-items:center; gap:9px; width:100%; text-align:left; padding:0 12px; height:46px;
+    font-family:inherit; font-size:13px; font-weight:800; color:#39434e; background:#f7f9fb;
+    border:1px solid var(--line); border-radius:12px; letter-spacing:-.01em;}
+  .sheetOpt:active{background:#e9eef4;}
+  .sheetOpt .brandDot{width:20px; height:20px; border-radius:6px; font-size:10.5px;}
+  .sheetPreview{margin-top:9px; padding:9px; background:#f7f9fb; border:1px solid var(--line); border-radius:10px;
+    font-size:11px; line-height:1.5; color:#4b5663; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-all;
+    max-height:110px; overflow-y:auto; overflow-x:hidden;}
+  .hRow{display:flex; gap:9px; padding:9px 0; border-bottom:1px solid var(--line);}
+  .hRow:last-child{border-bottom:0;}
+  .hRow .hic{width:28px; height:28px; border-radius:9px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    background:var(--accent-soft); color:var(--accent-dark);}
+  .hRow .hb{min-width:0;}
+  .hRow .hb b{display:block; font-size:12.5px; letter-spacing:-.01em;}
+  .hRow .hb span{display:block; font-size:11px; color:var(--muted); line-height:1.45; margin-top:1px; word-break:keep-all;}
 
-  #toast{
-    position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom)); transform:translate(-50%,12px);
-    background:rgba(18,24,31,.93); color:#fff; font-size:13px; font-weight:700;
-    padding:11px 17px; border-radius:999px; opacity:0; pointer-events:none;
-    transition:opacity .18s ease, transform .18s ease; z-index:60; max-width:88vw; text-align:center;
-  }
+  .folderMgrList{max-height:46vh; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .mgrRow{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--line);}
+  .mgrRow:last-child{border-bottom:0;}
+  .mgrInfo{flex:1 1 auto; min-width:0; display:flex; align-items:baseline; gap:6px;}
+  .mgrName{font-size:13px; font-weight:800; letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .mgrCount{font-size:10.5px; font-weight:800; color:var(--muted); flex:0 0 auto; font-variant-numeric:tabular-nums;}
+  .mgrActs{display:flex; gap:4px; flex:0 0 auto;}
+  .mgrRow .mgrInput{flex:1 1 auto; min-width:0; font-size:13.5px; padding:9px; margin:6px 0;}
+  .moveList{display:grid; gap:5px; max-height:54vh; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+  .moveOpt{display:flex; align-items:center; gap:8px; width:100%; text-align:left; padding:0 12px; height:46px;
+    font-family:inherit; font-size:13px; font-weight:800; color:#39434e; background:#f7f9fb;
+    border:1px solid var(--line); border-radius:12px;}
+  .moveOpt.on{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent-dark);}
+  .moveOpt .tick{margin-left:auto; color:var(--accent-dark);}
+
+  #toast{position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom)); transform:translate(-50%,12px);
+    background:rgba(15,23,32,.94); color:#fff; font-size:12.5px; font-weight:700; padding:10px 16px;
+    border-radius:999px; opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease;
+    z-index:80; max-width:88vw; text-align:center;}
   #toast.show{opacity:1; transform:translate(-50%,0);}
 
-  /* ---------- 링크 전용 안내 화면 ---------- */
-  .lockWrap{position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
-    padding:24px 18px calc(24px + env(safe-area-inset-bottom)); background:linear-gradient(180deg,#eef1f5,#e5eaf1);}
-  .lockCard{width:100%; max-width:420px; background:#fff; border-radius:18px; padding:22px 18px 20px; text-align:center;
-    box-shadow:0 1px 2px rgba(18,24,31,.06), 0 14px 36px rgba(18,24,31,.14);}
-  .lockCard .lk{font-size:28px; line-height:1; margin-bottom:10px;}
-  .lockCard p.lockName{font-size:12.5px; font-weight:800; color:var(--accent); letter-spacing:.01em; margin:0 0 8px; word-break:keep-all;}
-  .lockCard h2{font-size:17px; margin:0 0 8px; letter-spacing:-.02em; line-height:1.36; word-break:keep-all;}
-  .lockCard p{font-size:13px; color:var(--muted); margin:0 0 14px; line-height:1.55; word-break:keep-all;}
-  .lockGo{display:block; padding:15px; border-radius:14px; text-decoration:none; font-weight:800; font-size:15px; color:#fff;
-    background:linear-gradient(180deg,#12996a,#0d7d55); box-shadow:0 8px 18px rgba(15,138,95,.24); letter-spacing:-.01em;}
-  .lockGo:active{transform:translateY(1px);}
-  .lockCard p.lockUrl{font-size:11px; color:#8d97a2; margin:12px 0 0; word-break:break-all; line-height:1.45; overflow-wrap:anywhere;}
-
-  /* ---------- 시설 사진 ---------- */
-  .photoBlock{margin-top:13px; padding-top:12px; border-top:1px dashed var(--line);}
-  .photoBlock.flat{margin-top:0; padding-top:0; border-top:0;}
-  .photoHead{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px;}
-  .photoHead .lbl{margin:0;}
-  .photoHead .lbl em{font-style:normal; font-weight:600; color:var(--muted);}
-  .photoCount{font-size:11.5px; font-weight:800; color:var(--muted); font-variant-numeric:tabular-nums; flex:0 0 auto;}
-  .photoRow{display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start;}
-  .photoRow .hint{margin:0; padding:6px 0 0; flex:1 1 100%;}
-  .photoPick{
-    position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; gap:6px;
-    padding:12px 14px; font-size:13px; font-weight:800; color:var(--accent-dark);
-    background:var(--accent-soft); border:1px dashed #bfe2d3; border-radius:12px; width:100%; text-align:center;
-  }
-  .photoPick:active{background:#dff1e8;}
-  .photoPick input[type=file]{position:absolute; inset:0; opacity:0; font-size:100px; cursor:pointer;}
-  .photoPick.busy{opacity:.55;}
-  .thumb{position:relative; flex:0 0 auto; line-height:0;}
-  .thumb img{display:block; width:76px; height:76px; object-fit:cover; border-radius:10px; border:1px solid var(--line); background:#f2f5f8; cursor:pointer;}
-  .thumb .x{
-    position:absolute; top:-7px; right:-7px; width:23px; height:23px; padding:0; border-radius:50%;
-    border:1px solid #d7dde4; background:#fff; color:#5a6672; font-size:11px; font-weight:800; line-height:1;
-    display:flex; align-items:center; justify-content:center; box-shadow:0 1px 4px rgba(18,24,31,.18);
-  }
-  .thumb .x:active{background:var(--danger-soft); color:var(--danger);}
-  .thumb.sm img{width:32px; height:32px; border-radius:8px;}
-  .thumb.sm .x{display:none;}
-  .itemPhotos{display:flex; align-items:center; gap:4px; margin-top:5px; flex-wrap:wrap;}
-  .spaceInfo{margin:2px 0 6px; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums;}
-  .spaceInfo.near{color:var(--warn); font-weight:700;}
-  .tPhotos{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
-  .tPhotos .thumb img{width:84px; height:84px;}
-
-  /* 사진 크게 보기(라이트박스) */
+  /* ---------- 사진 크게 보기 ---------- */
   .lbWrap{position:fixed; inset:0; z-index:90; display:flex; flex-direction:column; background:rgba(9,13,18,.94);}
   .lbStage{flex:1 1 auto; min-height:0; display:flex; align-items:center; justify-content:center; padding:56px 12px 6px;}
   .lbStage img{max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; background:#0b0f14;}
-  .lbClose{
-    position:absolute; top:calc(10px + env(safe-area-inset-top)); right:12px; width:42px; height:42px;
-    border-radius:50%; border:0; background:rgba(255,255,255,.16); color:#fff; font-size:16px; font-weight:800;
-    display:flex; align-items:center; justify-content:center; padding:0;
-  }
+  .lbClose{position:absolute; top:calc(10px + env(safe-area-inset-top)); right:12px; width:42px; height:42px;
+    border-radius:50%; border:0; background:rgba(255,255,255,.16); color:#fff; display:flex; align-items:center;
+    justify-content:center; padding:0;}
   .lbClose:active{background:rgba(255,255,255,.3);}
   .lbBar{display:flex; align-items:center; justify-content:center; gap:14px; padding:8px 12px calc(14px + env(safe-area-inset-bottom));}
-  .lbBar button{
-    width:48px; height:42px; border-radius:12px; border:1px solid rgba(255,255,255,.22);
-    background:rgba(255,255,255,.1); color:#fff; font-size:19px; font-weight:800; line-height:1;
-  }
+  .lbBar button{width:48px; height:42px; border-radius:12px; border:1px solid rgba(255,255,255,.22);
+    background:rgba(255,255,255,.1); color:#fff; font-size:19px; font-weight:800; line-height:1; font-family:inherit;}
   .lbBar button:disabled{opacity:.3;}
   .lbBar span{color:#e6ebf1; font-size:13px; font-weight:800; font-variant-numeric:tabular-nums; min-width:48px; text-align:center;}
+
+  /* ---------- 링크 전용 안내 ---------- */
+  .lockWrap{position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
+    padding:24px 18px calc(24px + env(safe-area-inset-bottom)); background:linear-gradient(180deg,#edf0f5,#e4e9f1);}
+  .lockCard{width:100%; max-width:400px; background:#fff; border-radius:18px; padding:22px 18px 20px; text-align:center;
+    box-shadow:0 1px 2px rgba(15,23,32,.05), 0 14px 36px rgba(15,23,32,.13);}
+  .lockIco{width:44px; height:44px; border-radius:14px; background:var(--accent-soft); color:var(--accent-dark);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 10px;}
+  .lockCard p.lockName{font-size:11.5px; font-weight:800; color:var(--accent); letter-spacing:.02em; margin:0 0 7px; word-break:keep-all;}
+  .lockCard h2{font-size:16.5px; margin:0 0 7px; letter-spacing:-.03em; line-height:1.35; word-break:keep-all;}
+  .lockCard p{font-size:12.5px; color:var(--muted); margin:0 0 13px; line-height:1.5; word-break:keep-all;}
+  .lockGo{display:flex; align-items:center; justify-content:center; gap:6px; padding:14px; border-radius:13px;
+    text-decoration:none; font-weight:800; font-size:14.5px; color:#fff;
+    background:linear-gradient(180deg,#12996a,#0d7d55); box-shadow:0 8px 18px rgba(15,138,95,.22); letter-spacing:-.01em;}
+  .lockGo:active{transform:translateY(1px);}
+  .lockCard p.lockUrl{font-size:10px; color:#96a1ad; margin:11px 0 0; word-break:break-all; line-height:1.4;}
 </style>
 </head>
 <body>
 
+<svg class="sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21.2s6.9-6 6.9-11.6a6.9 6.9 0 1 0-13.8 0C5.1 15.2 12 21.2 12 21.2Z"/><circle cx="12" cy="9.4" r="2.5"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.4"/><path d="M12 2.2v2.6M12 19.2v2.6M2.2 12h2.6M19.2 12h2.6"/></symbol>
+  <symbol id="i-nav" viewBox="0 0 24 24"><path d="M3.4 10.9 20.6 3l-7.7 17.6-1.9-7.6-7.6-2.1Z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5.5" r="2.8"/><circle cx="6" cy="12" r="2.8"/><circle cx="18" cy="18.5" r="2.8"/><path d="M8.5 10.7l7-3.6M8.5 13.3l7 3.6"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M14.5 6.5l3 3"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 6.5h16M9.5 6.5V4.3h5v2.2M6.4 6.5l.8 13.2h9.6l.8-13.2"/><path d="M10.5 10.5v5.5M13.5 10.5v5.5"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.2 7.2a2 2 0 0 1 2-2h3.3c.5 0 1 .2 1.4.6l1.3 1.3c.2.2.4.3.7.3h6.9a2 2 0 0 1 2 2v7.4a2 2 0 0 1-2 2H5.2a2 2 0 0 1-2-2V7.2Z"/></symbol>
+  <symbol id="i-folder-plus" viewBox="0 0 24 24"><path d="M3.2 7.2a2 2 0 0 1 2-2h3.3c.5 0 1 .2 1.4.6l1.3 1.3c.2.2.4.3.7.3h6.9a2 2 0 0 1 2 2v7.4a2 2 0 0 1-2 2H5.2a2 2 0 0 1-2-2V7.2Z"/><path d="M12 10.6v5M9.5 13.1h5"/></symbol>
+  <symbol id="i-folder-move" viewBox="0 0 24 24"><path d="M3.2 7.2a2 2 0 0 1 2-2h3.3c.5 0 1 .2 1.4.6l1.3 1.3c.2.2.4.3.7.3h6.9a2 2 0 0 1 2 2v7.4a2 2 0 0 1-2 2H5.2a2 2 0 0 1-2-2V7.2Z"/><path d="M9 13.4h5.4M12.4 11.2l2.2 2.2-2.2 2.2"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3.6v10.2M7.9 10.2 12 14.3l4.1-4.1M4.5 19.6h15"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 14.4V4.2M7.9 8.3 12 4.2l4.1 4.1M4.5 19.6h15"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.6h3.1l1.4-2.1h7l1.4 2.1H20a1.2 1.2 0 0 1 1.2 1.2v8a1.2 1.2 0 0 1-1.2 1.2H4a1.2 1.2 0 0 1-1.2-1.2v-8A1.2 1.2 0 0 1 4 8.6Z"/><circle cx="12" cy="13.8" r="3.3"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.4" y="4.6" width="17.2" height="14.8" rx="2.4"/><circle cx="8.8" cy="9.7" r="1.6"/><path d="M3.8 16.6 9 11.9l3.4 3 2.6-2.2 5 4.4"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M6.5 9.3 12 14.8l5.5-5.5"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><path d="M7.4 4.4v15.2M4.2 16.4l3.2 3.2 3.2-3.2M16.6 19.6V4.4M13.4 7.6l3.2-3.2 3.2 3.2"/></symbol>
+  <symbol id="i-table" viewBox="0 0 24 24"><rect x="3.6" y="4.6" width="16.8" height="14.8" rx="2"/><path d="M3.6 9.7h16.8M3.6 14.4h16.8M9.6 4.6v14.8"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8.2h13M13.6 4.8l3.4 3.4-3.4 3.4M20 15.8H7M10.4 12.4 7 15.8l3.4 3.4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.8 12.6l4.6 4.6L19.2 7"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.4 6.4l11.2 11.2M17.6 6.4 6.4 17.6"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.5 2.3c-.7.3-.9.8-.9 1.6"/><path d="M12.2 16.5h.01"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.8" y="10.4" width="14.4" height="9.8" rx="2.2"/><path d="M8.2 10.4V8a3.8 3.8 0 0 1 7.6 0v2.4"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10.2 13.8a3.9 3.9 0 0 0 5.6 0l2.6-2.6a4 4 0 0 0-5.6-5.6l-1.4 1.4"/><path d="M13.8 10.2a3.9 3.9 0 0 0-5.6 0l-2.6 2.6a4 4 0 0 0 5.6 5.6l1.4-1.4"/></symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="5" y="5.4" width="14" height="15" rx="2.2"/><path d="M9 5.4V3.8h6v1.6M8.4 10.6h7.2M8.4 14.4h7.2"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4.6 3.6 6.8v12.6L9 17.2l6 2.2 5.4-2.2V4.6L15 6.8 9 4.6Z"/><path d="M9 4.6v12.6M15 6.8v12.6"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6.2" cy="18.4" r="2.2"/><circle cx="17.8" cy="5.6" r="2.2"/><path d="M8.4 18.4h6.2a3.2 3.2 0 0 0 0-6.4h-4.6a3.2 3.2 0 0 1 0-6.4h5.6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8.6 6.6h11M8.6 12h11M8.6 17.4h11M4.6 6.6h.01M4.6 12h.01M4.6 17.4h.01"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M3.8 13.2h4l1.4 2.6h5.6l1.4-2.6h4"/><path d="M4.6 13.2V8.4l2-3.4h10.8l2 3.4v4.8a2.4 2.4 0 0 1-2.4 2.4H7a2.4 2.4 0 0 1-2.4-2.4Z"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19.5V5M6.4 10.6 12 5l5.6 5.6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M12 11v5.4M12 7.9h.01"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4.4 19.4V4.6M4.4 19.4h15.2"/><path d="M8.4 16V11M12.4 16V7.4M16.4 16v-3.4"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M11.3 3.8H4.6a.8.8 0 0 0-.8.8v6.7c0 .2.1.4.2.6l7.6 7.6c.3.3.9.3 1.2 0l6.7-6.7c.3-.3.3-.9 0-1.2l-7.6-7.6a.8.8 0 0 0-.6-.2Z"/><path d="M8 8h.01"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M5.4 4.6h13.2v9.6l-5 5H5.4V4.6Z"/><path d="M13.6 19.2v-5h5M8.6 9h6.8M8.6 12.4h4.4"/></symbol>
+</svg>
+
 <section class="lockWrap hidden" id="lockScreen" aria-live="polite">
   <div class="lockCard">
-    <div class="lk">🔒</div>
-    <p class="lockName">현장조사 및 비점오염저감시설 위치 관리</p>
-    <h2>이 프로그램은 링크 주소에서만 열 수 있습니다</h2>
-    <p>현장조사부터 시설 위치 관리까지 쓰는 도구입니다.<br>파일로 내려받아 열면 동작하지 않으니 아래 링크로 열어 주세요.</p>
-    <a class="lockGo" id="lockLink" href="https://junjunpapa99.github.io/grs80_map_viewer/grs80_map_viewer.html" target="_blank" rel="noopener noreferrer">링크로 열기</a>
+    <div class="lockIco"><svg class="ic"><use href="#i-lock"/></svg></div>
+    <p class="lockName">현장조사 및 시설물 위치 관리</p>
+    <h2>링크 주소에서만 열립니다</h2>
+    <p>파일로 내려받아 열면 위치 기능이 동작하지 않습니다.<br>아래 링크로 열어 주세요.</p>
+    <a class="lockGo" id="lockLink" href="https://junjunpapa99.github.io/grs80_map_viewer/grs80_map_viewer.html" target="_blank" rel="noopener noreferrer">
+      <svg class="ic s"><use href="#i-link"/></svg>링크로 열기
+    </a>
     <p class="lockUrl" id="lockUrl">https://junjunpapa99.github.io/grs80_map_viewer/grs80_map_viewer.html</p>
   </div>
 </section>
@@ -409,34 +486,44 @@
 <main class="app">
 
   <header class="head">
-    <div class="brand">
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.1 7 13 7 13s7-7.9 7-13a7 7 0 0 0-7-7Zm0 9.6A2.6 2.6 0 1 1 12 6.4a2.6 2.6 0 0 1 0 5.2Z"/></svg>
-      <span>GRS80 좌표 · 현장 GPS</span>
+    <div class="headMain">
+      <div class="brand">
+        <svg class="ic xs"><use href="#i-pin"/></svg>
+        <span>GRS80 좌표 · GPS</span>
+      </div>
+      <h1>현장조사 및 시설물 위치 관리</h1>
     </div>
-    <h1>현장조사 및 비점오염저감시설 위치 관리</h1>
-    <p class="sub">현장조사부터 비점오염저감시설 위치 관리까지 — 캐드(GRS80) 좌표를 이름·사진과 함께 저장해 두고, 현장에서 폰 GPS로 거리와 방향을 바로 확인합니다.</p>
+    <button type="button" class="ibtn plain round" id="helpBtn" aria-label="사용법 보기">
+      <svg class="ic"><use href="#i-help"/></svg>
+    </button>
   </header>
 
   <!-- 현재 위치 -->
   <section class="card gpsCard">
     <div class="gpsTop">
+      <span class="gpsIco"><svg class="ic s"><use href="#i-target"/></svg></span>
+      <span class="gpsTitle" id="gpsTitle">위치 꺼짐</span>
       <span class="dot" id="gpsDot"></span>
-      <span class="gpsTitle" id="gpsTitle">현재 위치 꺼짐</span>
       <span class="gpsAcc" id="gpsAcc"></span>
     </div>
-    <p class="gpsMsg" id="gpsMsg">위치를 켜면 서 있는 자리에서 선택한 시설까지의 거리와 방향을 보여 줍니다.</p>
+    <p class="gpsMsg" id="gpsMsg"></p>
     <div class="gpsRow">
-      <button type="button" class="ghost" id="gpsBtn">현재 위치 켜기</button>
-      <button type="button" class="ghost" id="gpsSaveBtn">현재 위치를 시설로 저장</button>
+      <button type="button" class="btn accent" id="gpsBtn">
+        <svg class="ic s"><use href="#i-nav"/></svg><span class="t">위치 켜기</span>
+      </button>
+      <button type="button" class="btn" id="gpsSaveBtn">
+        <svg class="ic s"><use href="#i-plus"/></svg><span>현 위치 저장</span>
+      </button>
     </div>
     <div class="gpsCoord" id="gpsCoord"></div>
   </section>
 
   <!-- 선택된 시설 -->
   <section class="card" id="targetCard">
-    <div id="targetEmpty" class="emptyBig">
-      <strong>아직 고른 시설이 없습니다</strong>
-      <p>아래 <b>새 시설 추가</b>에서 좌표를 넣어 저장하거나,<br>목록에서 시설을 눌러 주세요.</p>
+    <div id="targetEmpty" class="emptyState">
+      <svg class="ic"><use href="#i-pin"/></svg>
+      <strong>고른 시설물이 없습니다</strong>
+      <p>목록에서 고르거나 좌표로 추가하세요</p>
     </div>
 
     <div id="targetBody" class="hidden">
@@ -447,187 +534,247 @@
 
       <div class="distBox off" id="distBox">
         <div class="arrowWrap"><div class="arrow" id="arrow">↑</div></div>
-        <div style="min-width:0">
+        <div class="distInfo">
           <div class="distMain" id="distMain">거리 확인 전</div>
           <div class="distDir" id="distDir"></div>
-          <div class="distSub" id="distSub">현재 위치를 켜면 여기까지의 거리와 방향이 나옵니다.</div>
+          <div class="distSub" id="distSub"></div>
         </div>
       </div>
 
-      <div class="coordRows">
-        <div class="coordRow"><span class="k">위도</span><span class="v" id="tLat">–</span></div>
+      <div class="coordBox">
+        <div class="coordRow">
+          <span class="k">위도</span><span class="v" id="tLat">–</span>
+          <button type="button" class="ibtn plain sm" id="coordCopyBtn" aria-label="위도·경도 복사">
+            <svg class="ic xs"><use href="#i-copy"/></svg>
+          </button>
+        </div>
         <div class="coordRow"><span class="k">경도</span><span class="v" id="tLon">–</span></div>
         <div class="dms" id="tDms"></div>
       </div>
-      <div class="meta" id="tMeta"></div>
 
-      <div class="actions4">
-        <a class="mapBtn kakao" id="lnkKakaoMap" href="#" target="_blank" rel="noopener noreferrer">카카오맵<small>위치 보기</small></a>
-        <a class="mapBtn naver" id="lnkNaverMap" href="#" target="_blank" rel="noopener noreferrer">네이버지도<small>위치 보기</small></a>
-        <a class="mapBtn kakao" id="lnkKakaoTo" href="#" target="_blank" rel="noopener noreferrer">카카오 길찾기<small>현 위치에서</small></a>
-        <a class="mapBtn naver" id="lnkNaverTo" href="#" target="_blank" rel="noopener noreferrer">네이버 길찾기<small>현 위치에서</small></a>
+      <div class="mapGrid">
+        <a class="mapTile kakao" id="lnkKakaoMap" href="#" target="_blank" rel="noopener noreferrer">
+          <span class="brandDot">K</span><span class="mt">카카오 지도</span>
+        </a>
+        <a class="mapTile naver" id="lnkNaverMap" href="#" target="_blank" rel="noopener noreferrer">
+          <span class="brandDot">N</span><span class="mt">네이버 지도</span>
+        </a>
+        <a class="mapTile kakao" id="lnkKakaoTo" href="#" target="_blank" rel="noopener noreferrer">
+          <span class="brandDot">K</span><span class="mt">길찾기</span>
+        </a>
+        <a class="mapTile naver" id="lnkNaverTo" href="#" target="_blank" rel="noopener noreferrer">
+          <span class="brandDot">N</span><span class="mt">길찾기</span>
+        </a>
       </div>
 
-      <div class="secLabel">공유 · 다른 사람에게 이 위치 보내기</div>
-      <div class="shareGrid">
-        <button type="button" class="ghost" id="shareNativeBtn">공유하기</button>
-        <button type="button" class="ghost" id="shareTextBtn">안내문 복사</button>
-        <button type="button" class="ghost" id="copyKakaoBtn">카카오맵 링크</button>
-        <button type="button" class="ghost" id="copyNaverBtn">네이버지도 링크</button>
-        <button type="button" class="ghost wide" id="copyPageBtn">이 위치 페이지 링크 복사</button>
+      <div class="cardActs">
+        <button type="button" class="btn" id="shareOpenBtn">
+          <svg class="ic s"><use href="#i-share"/></svg><span>공유</span>
+        </button>
+        <span id="manageRow" class="hidden">
+          <button type="button" class="btn" id="editBtn">
+            <svg class="ic s"><use href="#i-pencil"/></svg><span>수정</span>
+          </button>
+        </span>
       </div>
 
-      <div class="rowBtns" id="saveRow">
-        <button type="button" class="ghost accent" id="saveBtn">이 위치를 시설로 저장</button>
-      </div>
-      <div class="rowBtns" id="manageRow">
-        <button type="button" class="ghost" id="editBtn">이름·메모 수정</button>
-        <button type="button" class="ghost" id="coordCopyBtn">좌표 복사</button>
+      <div id="saveRow" class="goRow hidden">
+        <button type="button" class="btn accent wide" id="saveBtn">
+          <svg class="ic s"><use href="#i-check"/></svg><span>이 위치를 시설물로 저장</span>
+        </button>
       </div>
 
-      <details class="alt" id="altBox">
-        <summary>다른 원점으로 보면 (원점이 헷갈릴 때)</summary>
-        <div class="altList" id="altList"></div>
+      <details class="fold" id="metaBox">
+        <summary>
+          <svg class="ic s"><use href="#i-info"/></svg><span>입력 좌표 · 표고</span>
+          <svg class="ic xs chev"><use href="#i-chevron"/></svg>
+        </summary>
+        <div class="foldBody"><div class="meta" id="tMeta"></div></div>
+      </details>
+
+      <details class="fold" id="altBox">
+        <summary>
+          <svg class="ic s"><use href="#i-table"/></svg><span>다른 원점으로 보기</span>
+          <svg class="ic xs chev"><use href="#i-chevron"/></svg>
+        </summary>
+        <div class="foldBody"><div class="altList" id="altList"></div></div>
       </details>
     </div>
   </section>
 
-  <!-- 시설 목록 -->
+  <!-- 시설물 목록 -->
   <section class="card" id="listCard">
     <div class="cardTitle">
-      <h2>저장한 시설</h2>
+      <h2><svg class="ic s" style="color:var(--accent)"><use href="#i-list"/></svg>저장한 시설물</h2>
       <span class="count" id="listCount">0곳</span>
     </div>
-    <div class="listTools">
-      <button type="button" class="ghost" id="sortBtn">이름순</button>
-      <button type="button" class="ghost" id="folderMgrBtn">폴더 관리</button>
-      <button type="button" class="ghost" id="exportJsonBtn">백업 저장</button>
-      <button type="button" class="ghost" id="exportCsvBtn">CSV</button>
+
+    <div class="tools">
+      <button type="button" class="ibtn sortBtn" id="sortBtn" aria-label="정렬 방식">
+        <svg class="ic xs"><use href="#i-sort"/></svg><span id="sortLabel">이름순</span>
+      </button>
+      <button type="button" class="ibtn" id="folderMgrBtn" aria-label="폴더 관리">
+        <svg class="ic s"><use href="#i-folder"/></svg>
+      </button>
+      <button type="button" class="ibtn" id="exportJsonBtn" aria-label="백업 저장">
+        <svg class="ic s"><use href="#i-download"/></svg>
+      </button>
+      <button type="button" class="ibtn" id="exportCsvBtn" aria-label="CSV 저장">
+        <svg class="ic s"><use href="#i-clipboard"/></svg>
+      </button>
       <span class="importBtnWrap">
-        <button type="button" class="ghost">불러오기</button>
-        <input type="file" id="importInput" accept=".json,.csv,text/csv,application/json">
+        <button type="button" class="ibtn" aria-label="백업 불러오기">
+          <svg class="ic s"><use href="#i-upload"/></svg>
+        </button>
+        <input type="file" id="importInput" accept=".json,.csv,text/csv,application/json" aria-label="백업 파일 불러오기">
       </span>
     </div>
-    <div class="chips" id="folderChips"></div>
     <p class="spaceInfo" id="spaceInfo"></p>
+
+    <div class="chips" id="folderChips"></div>
     <ul class="histList" id="facList"></ul>
-    <div class="emptyBox hidden" id="listEmpty">저장한 시설이 없습니다. 아래 <b>새 시설 추가</b>에서 등록하세요.</div>
-    <div style="text-align:right; margin-top:6px;">
-      <button type="button" class="linkBtn danger hidden" id="clearAllBtn">저장한 시설 모두 지우기</button>
+    <div class="emptyBox hidden" id="listEmpty">저장한 시설물이 없습니다. 아래 <b>좌표로 추가</b>에서 등록하세요.</div>
+    <div class="listFoot">
+      <button type="button" class="linkBtn danger hidden" id="clearAllBtn">
+        <svg class="ic xs"><use href="#i-trash"/></svg>모두 지우기
+      </button>
     </div>
   </section>
 
-  <!-- 새 시설 추가 -->
+  <!-- 좌표로 추가 -->
   <details id="addCard">
-    <summary><span>새 시설 추가 · 좌표 변환</span><span class="st" id="addState"></span></summary>
+    <summary>
+      <svg class="ic plus"><use href="#i-plus"/></svg>
+      <span>좌표로 추가</span>
+      <span class="st" id="addState"></span>
+      <svg class="ic xs chev"><use href="#i-chevron"/></svg>
+    </summary>
     <div class="addBody">
       <form id="coordForm" autocomplete="off" novalidate>
-        <label class="lbl" for="crs">좌표계</label>
-        <select id="crs"></select>
-        <p class="hint" id="crsHint"></p>
-
-        <details class="alt regionTable" id="regionBox">
-          <summary>원점별 사용 지역 표 보기</summary>
-          <p class="rgIntro">현장이 어느 원점인지 헷갈릴 때 참고하세요. <b>행을 누르면 그 원점으로 바로 바뀝니다.</b></p>
-          <table class="rgTable">
-            <colgroup><col class="rgC1"><col></colgroup>
-            <thead>
-              <tr><th scope="col">원점</th><th scope="col">주로 쓰는 지역</th></tr>
-            </thead>
-            <tbody id="regionRows">
-              <tr data-epsg="EPSG:5185" tabindex="0" role="button" aria-label="서부원점 EPSG 5185로 선택">
-                <th scope="row"><span class="rgName">서부원점</span><span class="rgMeta">EPSG:5185 · 125°E</span></th>
-                <td class="rgReg">인천 <em>강화·옹진 등 서해 도서</em>, 경기·충남·전북·전남 <em>서해안 일부</em></td>
-              </tr>
-              <tr data-epsg="EPSG:5186" tabindex="0" role="button" aria-label="중부원점 EPSG 5186으로 선택">
-                <th scope="row"><span class="rgName">중부원점</span><span class="rgMeta">EPSG:5186 · 127°E</span></th>
-                <td class="rgReg"><em>서울·인천·경기</em>, 충북·충남·대전·세종, 전북·전남·광주, <em>강원 영서</em>(춘천·원주), 제주</td>
-              </tr>
-              <tr data-epsg="EPSG:5187" tabindex="0" role="button" aria-label="동부원점 EPSG 5187로 선택">
-                <th scope="row"><span class="rgName">동부원점</span><span class="rgMeta">EPSG:5187 · 129°E</span></th>
-                <td class="rgReg"><em>강원 영동</em>(강릉·속초·삼척), <em>경북</em>(안동·포항)·대구, 경남·부산·울산</td>
-              </tr>
-              <tr data-epsg="EPSG:5188" tabindex="0" role="button" aria-label="동해원점 EPSG 5188로 선택">
-                <th scope="row"><span class="rgName">동해원점</span><span class="rgMeta">EPSG:5188 · 131°E</span></th>
-                <td class="rgReg"><em>울릉도·독도</em></td>
-              </tr>
-              <tr data-epsg="EPSG:5179" tabindex="0" role="button" aria-label="통합원점 UTM-K EPSG 5179로 선택">
-                <th scope="row"><span class="rgName">통합원점 (UTM-K)</span><span class="rgMeta">EPSG:5179 · 127.5°E</span></th>
-                <td class="rgReg">전국을 한 장으로 (네이버·카카오 지도, 공공 API)</td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="rgNote">원점 경도 ±1°가 적용 범위입니다 — 124~126°E 서부, 126~128°E 중부, 128~130°E 동부, 130~132°E 동해. 경계 지역이거나 기존 도면이 있으면 <b>표제란·성과표의 EPSG 코드</b>를 먼저 확인하세요. 2010년 이전 도면은 중부원점(구) EPSG:5181(북거 500,000)입니다.</p>
-        </details>
+        <div class="crsLine">
+          <select id="crs" aria-label="좌표계"></select>
+          <button type="button" class="ibtn" id="regionToggle" aria-label="원점별 사용 지역 표" aria-expanded="false">
+            <svg class="ic s"><use href="#i-table"/></svg>
+          </button>
+        </div>
+        <p class="crsHint" id="crsHint"></p>
 
         <div class="pasteRow">
-          <input id="paste" type="text" placeholder="붙여넣기 — 예: X = 201234.56  Y = 543210.12  Z = 34.56" aria-label="좌표 한 줄 붙여넣기">
-          <button type="button" class="mini" id="pasteBtn">넣기</button>
+          <label class="pasteWrap" for="paste">
+            <svg class="ic s"><use href="#i-clipboard"/></svg>
+            <input id="paste" type="text" placeholder="좌표 붙여넣기 (캐드 ID 결과)" aria-label="좌표 한 줄 붙여넣기">
+          </label>
+          <button type="button" class="ibtn accent" id="pasteBtn" aria-label="붙여넣은 좌표 넣기">
+            <svg class="ic s"><use href="#i-arrow-up"/></svg>
+          </button>
         </div>
-        <p class="hint">쉼표·공백·탭, 캐드 <b>ID</b> 명령 결과(X=, Y=, Z=)를 그대로 붙여넣어도 됩니다.</p>
+
+        <details class="fold regionTable" id="regionBox">
+          <summary>
+            <svg class="ic s"><use href="#i-map"/></svg><span>원점별 사용 지역</span>
+            <svg class="ic xs chev"><use href="#i-chevron"/></svg>
+          </summary>
+          <div class="foldBody">
+            <p class="rgIntro">행을 누르면 그 원점으로 바뀝니다.</p>
+            <table class="rgTable">
+              <colgroup><col class="rgC1"><col></colgroup>
+              <thead><tr><th scope="col">원점</th><th scope="col">주로 쓰는 지역</th></tr></thead>
+              <tbody id="regionRows">
+                <tr data-epsg="EPSG:5185" tabindex="0" role="button" aria-label="서부원점 EPSG 5185로 선택">
+                  <th scope="row"><span class="rgName">서부원점</span><span class="rgMeta">EPSG:5185 · 125°E</span></th>
+                  <td class="rgReg">인천 <em>강화·옹진</em>, 경기·충남·전북·전남 <em>서해안 일부</em></td>
+                </tr>
+                <tr data-epsg="EPSG:5186" tabindex="0" role="button" aria-label="중부원점 EPSG 5186으로 선택">
+                  <th scope="row"><span class="rgName">중부원점</span><span class="rgMeta">EPSG:5186 · 127°E</span></th>
+                  <td class="rgReg"><em>서울·인천·경기</em>, 충북·충남·대전·세종, 전북·전남·광주, <em>강원 영서</em>, 제주</td>
+                </tr>
+                <tr data-epsg="EPSG:5187" tabindex="0" role="button" aria-label="동부원점 EPSG 5187로 선택">
+                  <th scope="row"><span class="rgName">동부원점</span><span class="rgMeta">EPSG:5187 · 129°E</span></th>
+                  <td class="rgReg"><em>강원 영동</em>, <em>경북</em>·대구, 경남·부산·울산</td>
+                </tr>
+                <tr data-epsg="EPSG:5188" tabindex="0" role="button" aria-label="동해원점 EPSG 5188로 선택">
+                  <th scope="row"><span class="rgName">동해원점</span><span class="rgMeta">EPSG:5188 · 131°E</span></th>
+                  <td class="rgReg"><em>울릉도·독도</em></td>
+                </tr>
+                <tr data-epsg="EPSG:5179" tabindex="0" role="button" aria-label="통합원점 UTM-K EPSG 5179로 선택">
+                  <th scope="row"><span class="rgName">통합원점 (UTM-K)</span><span class="rgMeta">EPSG:5179 · 127.5°E</span></th>
+                  <td class="rgReg">전국 한 장 (네이버·카카오, 공공 API)</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="rgNote">경계 지역이거나 기존 도면이 있으면 <b>표제란·성과표의 EPSG 코드</b>를 먼저 확인하세요. 2010년 이전 도면은 중부원점(구) EPSG:5181입니다.</p>
+          </div>
+        </details>
 
         <div class="fields">
           <div class="field">
-            <label for="inX" id="lblX">X <em>(동거 E)</em></label>
+            <label for="inX" id="lblX">X <em>동거</em></label>
             <input id="inX" type="text" inputmode="decimal" enterkeyhint="next" placeholder="198053.65" aria-label="X 좌표">
           </div>
           <div class="field">
-            <label for="inY" id="lblY">Y <em>(북거 N)</em></label>
+            <label for="inY" id="lblY">Y <em>북거</em></label>
             <input id="inY" type="text" inputmode="decimal" enterkeyhint="next" placeholder="551888.92" aria-label="Y 좌표">
           </div>
           <div class="field z">
-            <label for="inZ" id="lblZ">Z <em>(표고, 선택)</em></label>
+            <label for="inZ" id="lblZ">Z <em>표고</em></label>
             <input id="inZ" type="text" inputmode="decimal" enterkeyhint="next" placeholder="선택" aria-label="Z 값 (표고, 선택)">
           </div>
         </div>
 
         <div class="swapRow">
-          <button type="button" class="ghost" id="swapBtn">⇄ X ↔ Y 바꾸기</button>
+          <button type="button" class="btn" id="swapBtn">
+            <svg class="ic s"><use href="#i-swap"/></svg><span>X ↔ Y</span>
+          </button>
           <span class="swapState" id="swapState"></span>
         </div>
 
         <div class="nameRow">
-          <div class="two">
-            <div>
-              <label class="lbl" for="inName">시설명</label>
-              <input id="inName" type="text" placeholder="초기우수시설 1호" enterkeyhint="next">
-            </div>
-            <div>
-              <label class="lbl" for="inMemo">현장 메모</label>
-              <input id="inMemo" type="text" placeholder="배수로 우측 맨홀 옆" enterkeyhint="done">
-            </div>
+          <label class="inputWrap" for="inName">
+            <svg class="ic s"><use href="#i-tag"/></svg>
+            <input id="inName" type="text" placeholder="이름 (예: 1호 시설물, 우수저류조 A)" enterkeyhint="next">
+          </label>
+          <label class="inputWrap" for="inMemo">
+            <svg class="ic s"><use href="#i-note"/></svg>
+            <input id="inMemo" type="text" placeholder="메모 (선택)" enterkeyhint="done">
+          </label>
+          <div class="folderPick">
+            <label class="iw" for="inFolder">
+              <svg class="ic s"><use href="#i-folder"/></svg>
+              <select id="inFolder" aria-label="폴더"></select>
+            </label>
+            <button type="button" class="ibtn" id="newFolderBtn" aria-label="새 폴더">
+              <svg class="ic s"><use href="#i-folder-plus"/></svg>
+            </button>
           </div>
-          <div>
-            <label class="lbl" for="inFolder">폴더 (현장)</label>
-            <div class="folderPick">
-              <select id="inFolder"></select>
-              <button type="button" class="mini" id="newFolderBtn">+ 새 폴더</button>
-            </div>
-            <div class="folderNew hidden" id="folderNew">
-              <input id="newFolderName" type="text" placeholder="새 폴더 이름 — 예: 안동 하수관로 1공구" enterkeyhint="done">
-              <div class="folderNewBtns">
-                <button type="button" class="ghost accent" id="newFolderOk">만들기</button>
-                <button type="button" class="ghost" id="newFolderCancel">취소</button>
-              </div>
+          <div class="folderNew hidden" id="folderNew">
+            <input id="newFolderName" type="text" placeholder="새 폴더 이름 (예: 안동 1공구)" enterkeyhint="done">
+            <div class="folderNewBtns">
+              <button type="button" class="btn accent" id="newFolderOk">만들기</button>
+              <button type="button" class="btn" id="newFolderCancel">취소</button>
             </div>
           </div>
         </div>
 
         <div class="photoBlock">
           <div class="photoHead">
-            <span class="lbl">현장 사진 <em>(선택 · 최대 3장)</em></span>
+            <svg class="ic s"><use href="#i-camera"/></svg>
+            <span class="lbl">현장 사진 <em>· 최대 3장</em></span>
             <span class="photoCount" id="addPhotoCount">0/3</span>
           </div>
           <div class="photoRow" id="addPhotoRow"></div>
-          <label class="photoPick" id="addPhotoPick" style="margin-top:8px;">📷 사진 찍기 · 고르기
+          <label class="photoPick" id="addPhotoPick">
+            <svg class="ic s"><use href="#i-camera"/></svg><span>사진 추가</span>
             <input type="file" id="addPhotos" accept="image/*" multiple aria-label="현장 사진 넣기">
           </label>
-          <p class="hint">사진은 자동으로 줄여서(긴 변 800px) 이 브라우저에만 저장합니다. 사진을 누르면 크게 볼 수 있습니다.</p>
         </div>
 
-        <div style="display:grid; gap:7px; margin-top:13px;">
-          <button type="submit" class="primary" id="goBtn">좌표 확인 · 지도 보기</button>
-          <button type="button" class="ghost" id="goSaveBtn" style="width:100%; padding:14px;">확인하고 바로 저장</button>
+        <div class="goRow">
+          <button type="submit" class="btn primary" id="goBtn">
+            <svg class="ic"><use href="#i-map"/></svg><span>지도에서 보기</span>
+          </button>
+          <button type="button" class="btn wide" id="goSaveBtn">
+            <svg class="ic s"><use href="#i-check"/></svg><span>확인하고 바로 저장</span>
+          </button>
         </div>
 
         <p class="err hidden" id="err" role="alert"></p>
@@ -637,11 +784,10 @@
   </details>
 
   <footer>
-    <b>현장조사부터 비점오염저감시설 위치 관리까지</b> · 캐드(GRS80) 좌표로 바로 찾고 기록합니다.<br>
-    링크 주소(GitHub)로 열면 설치·로그인 없이 바로 쓸 수 있습니다.<br>
-    GRS80 횡단메르카토르 역변환 (a=6378137, 1/f=298.257222101) · 지도 표시는 WGS84 경위도 기준<br>
-    <b>중요:</b> 기록은 이 브라우저에만 저장됩니다. 폰을 바꾸거나 기록을 지우기 전에 <b>백업 저장</b>으로 파일을 남겨 두세요.<br>
-    이 화면 링크로도 위치를 그대로 공유할 수 있습니다.
+    <span class="fb"><svg class="ic xs"><use href="#i-pin"/></svg>GRS80 TM 역변환 · 기록은 이 브라우저에만</span>
+    <button type="button" class="linkBtn" id="helpBtn2">
+      <svg class="ic xs"><use href="#i-help"/></svg>사용법 · 백업 안내
+    </button>
   </footer>
 </main>
 
@@ -653,11 +799,21 @@
       <button type="button" id="sheetClose">닫기</button>
     </div>
     <div class="sheetList">
-      <button type="button" class="ghost" id="sheetShare">공유 시트로 보내기 (카카오톡·문자 등)</button>
-      <button type="button" class="ghost" id="sheetText">안내문 복사 — 이름·좌표·링크 한 번에</button>
-      <button type="button" class="ghost" id="sheetKakao">카카오맵 링크 복사</button>
-      <button type="button" class="ghost" id="sheetNaver">네이버지도 링크 복사</button>
-      <button type="button" class="ghost" id="sheetPage">이 위치 페이지 링크 복사</button>
+      <button type="button" class="sheetOpt" id="sheetShare">
+        <svg class="ic s"><use href="#i-share"/></svg>공유하기 (카카오톡·문자)
+      </button>
+      <button type="button" class="sheetOpt" id="sheetText">
+        <svg class="ic s"><use href="#i-clipboard"/></svg>안내문 복사 — 이름·좌표·링크
+      </button>
+      <button type="button" class="sheetOpt" id="sheetKakao">
+        <span class="brandDot" style="background:var(--kakao);color:#1a1700">K</span>카카오맵 링크 복사
+      </button>
+      <button type="button" class="sheetOpt" id="sheetNaver">
+        <span class="brandDot" style="background:var(--naver);color:#fff">N</span>네이버지도 링크 복사
+      </button>
+      <button type="button" class="sheetOpt" id="sheetPage">
+        <svg class="ic s"><use href="#i-link"/></svg>이 위치 페이지 링크 복사
+      </button>
     </div>
     <div class="sheetPreview" id="sheetPreview"></div>
   </div>
@@ -671,13 +827,15 @@
       <button type="button" id="folderSheetClose">닫기</button>
     </div>
     <div class="folderMgrList" id="folderMgrList"></div>
-    <div class="folderNew" style="margin-top:10px;">
-      <input id="newFolderInSheet" type="text" placeholder="새 폴더 이름 — 예: 안동 하수관로 1공구" enterkeyhint="done">
+    <div class="folderNew" style="margin-top:9px;">
+      <input id="newFolderInSheet" type="text" placeholder="새 폴더 이름 (예: 안동 1공구)" enterkeyhint="done">
       <div class="folderNewBtns">
-        <button type="button" class="ghost accent" id="newFolderInSheetBtn">폴더 추가</button>
+        <button type="button" class="btn accent" id="newFolderInSheetBtn">
+          <svg class="ic s"><use href="#i-plus"/></svg>폴더 추가
+        </button>
       </div>
     </div>
-    <p class="hint">폴더를 지워도 그 안의 시설은 지워지지 않고 <b>미분류</b>로 옮겨집니다.</p>
+    <p class="rgNote">폴더를 지워도 시설물은 지워지지 않고 <b>미분류</b>로 남습니다.</p>
   </div>
 </div>
 
@@ -692,8 +850,46 @@
   </div>
 </div>
 
+<div class="sheetWrap hidden" id="helpSheet" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="sheetBackdrop" id="helpBackdrop"></div>
+  <div class="sheet">
+    <div class="sheetHead">
+      <strong id="helpTitle">사용법</strong>
+      <button type="button" id="helpClose">닫기</button>
+    </div>
+    <div class="sheetList">
+      <div class="hRow">
+        <span class="hic"><svg class="ic s"><use href="#i-clipboard"/></svg></span>
+        <div class="hb"><b>좌표 넣기</b><span>캐드 ID 결과를 그대로 붙여넣으면 X·Y·Z를 읽습니다.</span></div>
+      </div>
+      <div class="hRow">
+        <span class="hic"><svg class="ic s"><use href="#i-map"/></svg></span>
+        <div class="hb"><b>원점 확인</b><span>표제란의 EPSG 코드를 보거나, 원점별 사용 지역 표에서 고르세요.</span></div>
+      </div>
+      <div class="hRow">
+        <span class="hic"><svg class="ic s"><use href="#i-target"/></svg></span>
+        <div class="hb"><b>GPS 거리·방향</b><span>위치를 켜면 서 있는 자리에서 시설물까지 거리와 방향이 갱신됩니다.</span></div>
+      </div>
+      <div class="hRow">
+        <span class="hic"><svg class="ic s"><use href="#i-camera"/></svg></span>
+        <div class="hb"><b>사진</b><span>시설물당 3장까지. 자동으로 줄여(긴 변 800px) 저장합니다.</span></div>
+      </div>
+      <div class="hRow">
+        <span class="hic"><svg class="ic s"><use href="#i-folder"/></svg></span>
+        <div class="hb"><b>폴더</b><span>현장별로 묶고 접어 둘 수 있습니다.</span></div>
+      </div>
+      <div class="hRow">
+        <span class="hic"><svg class="ic s"><use href="#i-download"/></svg></span>
+        <div class="hb"><b>백업</b><span>기록은 이 브라우저에만 저장됩니다. 폰을 바꾸기 전에 백업 저장(JSON)으로 파일을 남기세요.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="lbWrap hidden" id="lbWrap" role="dialog" aria-modal="true" aria-label="사진 크게 보기">
-  <button type="button" class="lbClose" id="lbClose" aria-label="사진 크게 보기 닫기">✕</button>
+  <button type="button" class="lbClose" id="lbClose" aria-label="사진 크게 보기 닫기">
+    <svg class="ic"><use href="#i-x"/></svg>
+  </button>
   <div class="lbStage" id="lbStage"><img id="lbImg" alt="시설 사진"></div>
   <div class="lbBar">
     <button type="button" id="lbPrev" aria-label="이전 사진">‹</button>
@@ -1237,12 +1433,6 @@
       onRemove: function (i) { addPhotos.splice(i, 1); refreshAddPhotos(); },
       onOpen: function (i) { openLightbox(addPhotos, i); }
     });
-    if (!addPhotos.length) {
-      var e = document.createElement("p");
-      e.className = "hint";
-      e.textContent = "사진을 넣으면 목록과 위치 카드에서 바로 볼 수 있습니다.";
-      row.appendChild(e);
-    }
     if (cnt) cnt.textContent = addPhotos.length + "/" + PHOTO_MAX;
     if (pick) pick.classList.toggle("hidden", addPhotos.length >= PHOTO_MAX);
   }
@@ -1281,6 +1471,25 @@
     t.classList.add("show");
     clearTimeout(toast._t);
     toast._t = setTimeout(function () { t.classList.remove("show"); }, ms || 2200);
+  }
+
+  /* 버튼 안의 글자만 바꾼다 (아이콘은 그대로) */
+  function setLabel(el, txt) {
+    if (!el) return;
+    var t = el.querySelector(".t");
+    if (t) t.textContent = txt; else el.textContent = txt;
+  }
+
+  /* 인라인 SVG 아이콘 요소 만들기 */
+  function icSvg(name, cls) {
+    var NS = "http://www.w3.org/2000/svg";
+    var sv = document.createElementNS(NS, "svg");
+    sv.setAttribute("class", cls || "ic s");
+    sv.setAttribute("aria-hidden", "true");
+    var u = document.createElementNS(NS, "use");
+    u.setAttribute("href", "#" + name);
+    sv.appendChild(u);
+    return sv;
   }
 
   function showErr(msg) { els.err.textContent = msg; els.err.classList.remove("hidden"); }
@@ -1353,34 +1562,33 @@
     syncRegionRows();
     var crs = currentCrs();
     if (crs.geo) {
-      els.lblX.innerHTML = "위도 <em>(°, N)</em>";
-      els.lblY.innerHTML = "경도 <em>(°, E)</em>";
+      els.lblX.innerHTML = "위도 <em>N</em>";
+      els.lblY.innerHTML = "경도 <em>E</em>";
       els.inX.placeholder = "37.5665350";
       els.inY.placeholder = "126.9779692";
-      els.crsHint.innerHTML = "위도·경도를 십진수로 넣습니다.";
+      els.crsHint.innerHTML = "위도·경도를 십진수로 입력";
       els.swapBtn.classList.add("hidden");
     } else {
       els.swapBtn.classList.remove("hidden");
-      els.crsHint.innerHTML = "원점 " + crs.short + " · 기준 " + crs.lat0 + "\u00B0N/" + crs.lon0 +
-        "\u00B0E · 동거상수 " + crs.FE.toLocaleString() + " · 북거상수 " + crs.FN.toLocaleString();
+      els.crsHint.textContent = crs.code + " · 동거 " + crs.FE.toLocaleString() + " · 북거 " + crs.FN.toLocaleString();
       renderOrderLabels();
     }
   }
 
   function renderOrderLabels() {
     if (state.swapped) {
-      els.lblX.innerHTML = "X <em>(북거 N)</em>";
-      els.lblY.innerHTML = "Y <em>(동거 E)</em>";
+      els.lblX.innerHTML = "X <em>북거</em>";
+      els.lblY.innerHTML = "Y <em>동거</em>";
       els.inX.placeholder = "551888.92";
       els.inY.placeholder = "198053.65";
-      els.swapState.textContent = "X=북거(N), Y=동거(E)";
+      els.swapState.textContent = "X 북거 · Y 동거";
       els.swapState.classList.add("on");
     } else {
-      els.lblX.innerHTML = "X <em>(동거 E)</em>";
-      els.lblY.innerHTML = "Y <em>(북거 N)</em>";
+      els.lblX.innerHTML = "X <em>동거</em>";
+      els.lblY.innerHTML = "Y <em>북거</em>";
       els.inX.placeholder = "198053.65";
       els.inY.placeholder = "551888.92";
-      els.swapState.textContent = "X=동거(E), Y=북거(N)";
+      els.swapState.textContent = "X 동거 · Y 북거";
       els.swapState.classList.remove("on");
     }
   }
@@ -1420,10 +1628,10 @@
   function guessName() {
     var list = loadFacilities(), max = 0;
     for (var i = 0; i < list.length; i++) {
-      var m = /초기우수시설\s*(\d+)\s*호/.exec(list[i].name || "");
+      var m = /(?:시설물|초기우수시설)\s*(\d+)\s*호/.exec(list[i].name || "");
       if (m) max = Math.max(max, parseInt(m[1], 10));
     }
-    return "초기우수시설 " + (max + 1) + "호";
+    return "시설물 " + (max + 1) + "호";
   }
 
   function doConvert(alsoSave) {
@@ -1461,12 +1669,12 @@
     els.targetBody.classList.remove("hidden");
 
     var crs = crsOf(c.code);
-    var badges = '<span class="badge">' + (crs.geo ? "위·경도" : crs.code + " · " + crs.short + "원점") + "</span>";
-    if (!crs.geo) {
-      badges += '<span class="badge sub">' + (c.swapped ? "X=북거 · Y=동거" : "X=동거 · Y=북거") + "</span>";
+    var badges = '<span class="badge">' + (crs.geo ? "위·경도" : crs.short + "원점 · " + crs.code) + "</span>";
+    if (!crs.geo && c.swapped) {
+      badges += '<span class="badge sub">X 북거 · Y 동거</span>';
     }
     if (c.folderId && folderById(c.folderId)) {
-      badges += '<span class="badge sub">\uD83D\uDCC1 ' + escHtml(folderName(c.folderId)) + "</span>";
+      badges += '<span class="badge sub"><svg class="ic xs"><use href="#i-folder"/></svg>' + escHtml(folderName(c.folderId)) + "</span>";
     }
     if (!c.id) badges += '<span class="badge warnb">저장 안 됨</span>';
     els.tBadges.innerHTML = badges;
@@ -1521,7 +1729,7 @@
     if (g.active && g.lat !== null) {
       base += "&sname=" + encodeURIComponent("현재 위치") + "&sx=" + fmt(g.lon, 7) + "&sy=" + fmt(g.lat, 7);
     }
-    base += "&ename=" + encodeURIComponent(c.name || "시설") +
+    base += "&ename=" + encodeURIComponent(c.name || "시설물") +
             "&ex=" + fmt(c.lon, 7) + "&ey=" + fmt(c.lat, 7);
     return base;
   }
@@ -1549,13 +1757,13 @@
 
   /* ---------- 링크·공유 ---------- */
   function kakaoMapUrl(c) {
-    return "https://map.kakao.com/link/map/" + encodeURIComponent(c.name || "시설") + "," + fmt(c.lat, 7) + "," + fmt(c.lon, 7);
+    return "https://map.kakao.com/link/map/" + encodeURIComponent(c.name || "시설물") + "," + fmt(c.lat, 7) + "," + fmt(c.lon, 7);
   }
   function naverMapUrl(c) {
     return "https://map.naver.com/p/search/" + encodeURIComponent(fmt(c.lat, 7) + "," + fmt(c.lon, 7));
   }
   function kakaoToUrl(c) {
-    return "https://map.kakao.com/link/to/" + encodeURIComponent(c.name || "시설") + "," + fmt(c.lat, 7) + "," + fmt(c.lon, 7);
+    return "https://map.kakao.com/link/to/" + encodeURIComponent(c.name || "시설물") + "," + fmt(c.lat, 7) + "," + fmt(c.lon, 7);
   }
 
   /* 이 화면을 웹에 올렸을 때 쓸 수 있는 주소 (파일로 열었으면 없음) */
@@ -1582,7 +1790,7 @@
   function shareTextFor(c) {
     var crs = crsOf(c.code);
     var lines = [];
-    lines.push("[" + (c.name || "시설") + "]");
+    lines.push("[" + (c.name || "시설물") + "]");
     if (c.memo) lines.push(c.memo);
     if (c.folderId && folderById(c.folderId)) lines.push("· 폴더 " + folderName(c.folderId));
     lines.push("");
@@ -1632,7 +1840,7 @@
   function openSheet(c) {
     if (!c) return;
     shareTarget = c;
-    $("sheetTitle").textContent = (c.name || "시설") + " 공유";
+    $("sheetTitle").textContent = (c.name || "시설물") + " 공유";
     $("sheetPreview").textContent = shareTextFor(c);
     $("sheetShare").classList.toggle("hidden", !navigator.share);
     $("sheetPage").classList.toggle("hidden", !pageLinkUrl(c));
@@ -1642,6 +1850,9 @@
     $("sheetWrap").classList.add("hidden");
     shareTarget = null;
   }
+
+  function openHelp() { $("helpSheet").classList.remove("hidden"); }
+  function closeHelp() { $("helpSheet").classList.add("hidden"); }
 
   /* 링크로 열렸을 때 좌표 채우기: ?name=..&epsg=5186&x=..&y=..&z=..&memo=.. */
   function parseQuery() {
@@ -1826,6 +2037,7 @@
     b.className = "chip" + (state.filter === key ? " on" : "");
     b.setAttribute("data-k", key);
     b.setAttribute("aria-pressed", state.filter === key ? "true" : "false");
+    b.appendChild(icSvg(key === "all" ? "i-list" : (key === "none" ? "i-inbox" : "i-folder"), "ic xs"));
     var t = document.createElement("span");
     t.textContent = label;
     b.appendChild(t);
@@ -1856,10 +2068,11 @@
     head.type = "button";
     head.className = "fgHead";
     head.setAttribute("aria-expanded", closed ? "false" : "true");
-    var v = document.createElement("span"); v.className = "fv"; v.textContent = "▼";
+    head.appendChild(icSvg(grp.key === "" ? "i-inbox" : "i-folder", "ic xs fic"));
     var nm = document.createElement("span"); nm.className = "fn"; nm.textContent = grp.name;
     var ct = document.createElement("span"); ct.className = "fcount"; ct.textContent = grp.items.length + "곳";
-    head.appendChild(v); head.appendChild(nm); head.appendChild(ct);
+    head.appendChild(nm); head.appendChild(ct);
+    head.appendChild(icSvg("i-chevron", "ic xs chev"));
     head.addEventListener("click", function () {
       state.collapsed[ck] = !state.collapsed[ck];
       li.classList.toggle("closed", !!state.collapsed[ck]);
@@ -1893,16 +2106,20 @@
       form.className = "editForm";
       form.setAttribute("data-id", f.id);
       form.innerHTML =
-        '<input type="text" class="eName" value="' + escAttr(dr ? dr.name : (f.name || "")) + '" placeholder="시설명" aria-label="시설명" enterkeyhint="done">' +
-        '<input type="text" class="eMemo" value="' + escAttr(dr ? dr.memo : (f.memo || "")) + '" placeholder="현장 메모" aria-label="현장 메모" enterkeyhint="done">' +
-        '<select class="eFolder" aria-label="폴더"></select>' +
+        '<label class="inputWrap"><svg class="ic s"><use href="#i-tag"/></svg>' +
+        '<input type="text" class="eName" value="' + escAttr(dr ? dr.name : (f.name || "")) + '" placeholder="이름" aria-label="시설물 이름" enterkeyhint="done"></label>' +
+        '<label class="inputWrap"><svg class="ic s"><use href="#i-note"/></svg>' +
+        '<input type="text" class="eMemo" value="' + escAttr(dr ? dr.memo : (f.memo || "")) + '" placeholder="메모" aria-label="메모" enterkeyhint="done"></label>' +
+        '<div class="folderPick"><label class="iw"><svg class="ic s"><use href="#i-folder"/></svg>' +
+        '<select class="eFolder" aria-label="폴더"></select></label></div>' +
         '<div class="photoBlock flat">' +
-          '<div class="photoHead"><span class="lbl">사진 <em>(최대 3장)</em></span><span class="photoCount eCount"></span></div>' +
+          '<div class="photoHead"><svg class="ic s"><use href="#i-camera"/></svg><span class="lbl">사진</span><span class="photoCount eCount"></span></div>' +
           '<div class="photoRow ePhotos"></div>' +
-          '<label class="photoPick ePick" style="margin-top:8px;">📷 사진 찍기 · 고르기<input type="file" class="eFile" accept="image/*" multiple aria-label="사진 넣기"></label>' +
+          '<label class="photoPick ePick"><svg class="ic s"><use href="#i-camera"/></svg><span>사진 추가</span>' +
+          '<input type="file" class="eFile" accept="image/*" multiple aria-label="사진 넣기"></label>' +
         '</div>' +
-        '<div class="row"><button type="button" class="ghost accent eSave">저장</button>' +
-        '<button type="button" class="ghost eCancel">취소</button></div>';
+        '<div class="row"><button type="button" class="btn accent eSave"><svg class="ic s"><use href="#i-check"/></svg>저장</button>' +
+        '<button type="button" class="btn eCancel"><svg class="ic s"><use href="#i-x"/></svg>취소</button></div>';
       var en = form.querySelector(".eName");
       var em = form.querySelector(".eMemo");
       var es = form.querySelector(".eFolder");
@@ -1930,12 +2147,6 @@
           onRemove: function (idx) { formPhotos.splice(idx, 1); refreshPhotos(); syncDraft(); },
           onOpen: function (idx) { openLightbox(formPhotos, idx); }
         });
-        if (!formPhotos.length) {
-          var e = document.createElement("p");
-          e.className = "hint";
-          e.textContent = "사진을 넣으면 목록과 위치 카드에서 볼 수 있습니다.";
-          box.appendChild(e);
-        }
         form.querySelector(".eCount").textContent = formPhotos.length + "/" + PHOTO_MAX;
         form.querySelector(".ePick").classList.toggle("hidden", formPhotos.length >= PHOTO_MAX);
       };
@@ -1973,60 +2184,86 @@
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "itemMain";
-    var subTxt = [];
-    if (f.memo) subTxt.push(f.memo);
-    if (f.code === "GEO") subTxt.push("위·경도");
-    else subTxt.push(crsOf(f.code).short + "원점");
-    var distTxt = "";
-    if (state.gps.active && state.gps.lat !== null) distTxt = fmtDist(distanceM(state.gps.lat, state.gps.lon, f.lat, f.lon));
-    btn.innerHTML =
-      '<div class="itemTop"><span class="itemName">' + escHtml(f.name) + "</span>" +
-      '<span class="itemDist">' + distTxt + "</span></div>" +
-      '<div class="itemSub">' + escHtml(subTxt.join(" · ")) + "</div>";
     var phs = photosOf(f);
+
+    /* 썸네일 (없으면 자리 아이콘) */
+    var th = document.createElement("span");
+    th.className = "thumbL";
     if (phs.length) {
-      var pRow = document.createElement("div");
-      pRow.className = "itemPhotos";
-      renderThumbs(pRow, phs, { small: true, onOpen: function (idx) { openLightbox(phs, idx); } });
+      var im = document.createElement("img");
+      im.src = phs[0];
+      im.alt = "";
+      im.setAttribute("draggable", "false");
+      th.appendChild(im);
       if (phs.length > 1) {
         var more = document.createElement("span");
-        more.className = "more";
-        more.textContent = phs.length + "장";
-        pRow.appendChild(more);
+        more.className = "n";
+        more.textContent = "+" + (phs.length - 1);
+        th.appendChild(more);
       }
-      btn.appendChild(pRow);
+      th.addEventListener("click", function (ev) {
+        ev.stopPropagation(); ev.preventDefault();
+        openLightbox(phs, 0);
+      });
+    } else {
+      th.appendChild(icSvg("i-pin", "ic xs ph"));
     }
+    btn.appendChild(th);
+
+    var body = document.createElement("span");
+    body.className = "itemBody";
+
+    var top = document.createElement("span");
+    top.className = "itemTop";
+    var nm = document.createElement("span");
+    nm.className = "itemName";
+    nm.textContent = f.name || "이름 없음";
+    top.appendChild(nm);
+    if (state.gps.active && state.gps.lat !== null) {
+      var db = document.createElement("span");
+      db.className = "itemDist";
+      db.textContent = fmtDist(distanceM(state.gps.lat, state.gps.lon, f.lat, f.lon));
+      top.appendChild(db);
+    }
+    body.appendChild(top);
+
+    var sub = document.createElement("span");
+    sub.className = "itemSub";
+    if (f.memo) {
+      var mm = document.createElement("span");
+      mm.className = "itemMemo";
+      mm.textContent = f.memo;
+      sub.appendChild(mm);
+    }
+    var cr = document.createElement("span");
+    cr.className = "itemCrs";
+    cr.textContent = f.code === "GEO" ? "위·경도" : crsOf(f.code).short;
+    sub.appendChild(cr);
+    body.appendChild(sub);
+    btn.appendChild(body);
     btn.addEventListener("click", function () { selectFacility(f.id); });
     li.appendChild(btn);
 
-    var sBtn = document.createElement("button");
-    sBtn.type = "button"; sBtn.className = "itemBtn share";
-    sBtn.setAttribute("aria-label", f.name + " 공유");
-    sBtn.textContent = "\u21AA";
-    sBtn.addEventListener("click", function (ev) { ev.stopPropagation(); openSheet(f); });
-    li.appendChild(sBtn);
-
-    var mBtn = document.createElement("button");
-    mBtn.type = "button"; mBtn.className = "itemBtn move";
-    mBtn.setAttribute("aria-label", f.name + " 폴더 이동");
-    mBtn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="vertical-align:-3px">' +
-      '<path fill="currentColor" d="M3 7a2 2 0 0 1 2-2h3.3c.5 0 1 .2 1.4.6l1.1 1.1c.2.2.4.3.7.3H19a2 2 0 0 1 2 2v7.5a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.5V7Z"/></svg>';
-    mBtn.addEventListener("click", function (ev) { ev.stopPropagation(); openMoveSheet(f.id); });
-    li.appendChild(mBtn);
-
-    var eBtn = document.createElement("button");
-    eBtn.type = "button"; eBtn.className = "itemBtn edit"; eBtn.setAttribute("aria-label", f.name + " 이름·메모 수정");
-    eBtn.textContent = "✎";
-    eBtn.addEventListener("click", function (ev) { ev.stopPropagation(); startEdit(f.id); });
-    li.appendChild(eBtn);
-
-    var dBtn = document.createElement("button");
-    dBtn.type = "button"; dBtn.className = "itemBtn del"; dBtn.setAttribute("aria-label", f.name + " 삭제");
-    dBtn.textContent = "✕";
-    dBtn.addEventListener("click", function (ev) { ev.stopPropagation(); deleteFacility(f.id); });
-    li.appendChild(dBtn);
+    var acts = document.createElement("span");
+    acts.className = "itemActs";
+    acts.appendChild(itemActBtn("i-share", f.name + " 공유", function (ev) { ev.stopPropagation(); openSheet(f); }));
+    acts.appendChild(itemActBtn("i-folder-move", f.name + " 폴더 이동", function (ev) { ev.stopPropagation(); openMoveSheet(f.id); }));
+    acts.appendChild(itemActBtn("i-pencil", f.name + " 수정", function (ev) { ev.stopPropagation(); startEdit(f.id); }));
+    acts.appendChild(itemActBtn("i-trash", f.name + " 삭제", function (ev) { ev.stopPropagation(); deleteFacility(f.id); }, "del"));
+    li.appendChild(acts);
 
     return li;
+  }
+
+  /* 목록 한 줄의 아이콘 버튼 */
+  function itemActBtn(icon, label, onClick, cls) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "itemBtn" + (cls ? " " + cls : "");
+    b.setAttribute("aria-label", label);
+    b.appendChild(icSvg(icon, "ic s"));
+    b.addEventListener("click", onClick);
+    return b;
   }
 
   /* 편집 시작 — 지금 보이는 목록에서 폼이 보이도록 필터·접힘을 먼저 맞춘다 */
@@ -2176,7 +2413,9 @@
     els.listEmpty.classList.toggle("hidden", list.length > 0);
     els.clearAllBtn.classList.toggle("hidden", list.length === 0);
     els.sortBtn.classList.toggle("hidden", list.length === 0);
-    els.sortBtn.textContent = settings.sort === "dist" ? "가까운순" : "이름순";
+    var sortLbl = $("sortLabel");
+    if (sortLbl) sortLbl.textContent = settings.sort === "dist" ? "가까운순" : "이름순";
+    els.sortBtn.classList.toggle("accent", settings.sort === "dist");
 
     /* 저장 공간 사용량 (사진이 쌓이면 5MB 한도에 가까워진다) */
     if (els.spaceInfo) {
@@ -2188,7 +2427,8 @@
         var mb = used / 1048576;
         var photoCount = 0;
         list.forEach(function (f) { photoCount += photosOf(f).length; });
-        els.spaceInfo.textContent = "이 브라우저 저장 공간 약 " + mb.toFixed(1) + "MB / 5MB" +
+        var sizeTxt = used < 1048576 ? Math.round(used / 1024) + "KB" : mb.toFixed(1) + "MB";
+        els.spaceInfo.textContent = "저장 공간 " + sizeTxt + " / 5MB" +
           (photoCount ? " · 사진 " + photoCount + "장" : "");
         els.spaceInfo.classList.toggle("near", mb > 3.6);
       }
@@ -2325,9 +2565,11 @@
       var acts = document.createElement("div");
       acts.className = "mgrActs";
       var rb = document.createElement("button");
-      rb.type = "button"; rb.className = "ghost"; rb.textContent = "이름 변경";
+      rb.type = "button"; rb.className = "ibtn sm"; rb.setAttribute("aria-label", fd.name + " 이름 변경");
+      rb.appendChild(icSvg("i-pencil", "ic xs"));
       var db = document.createElement("button");
-      db.type = "button"; db.className = "ghost danger"; db.textContent = "삭제";
+      db.type = "button"; db.className = "ibtn sm danger"; db.setAttribute("aria-label", fd.name + " 삭제");
+      db.appendChild(icSvg("i-trash", "ic xs"));
       acts.appendChild(rb); acts.appendChild(db);
 
       row.appendChild(info); row.appendChild(acts);
@@ -2339,9 +2581,11 @@
         inp.type = "text"; inp.className = "mgrInput"; inp.value = fd.name;
         inp.setAttribute("aria-label", "폴더 이름");
         var sv = document.createElement("button");
-        sv.type = "button"; sv.className = "ghost accent"; sv.textContent = "저장";
+        sv.type = "button"; sv.className = "ibtn sm accent"; sv.setAttribute("aria-label", "이름 저장");
+        sv.appendChild(icSvg("i-check", "ic xs"));
         var cx = document.createElement("button");
-        cx.type = "button"; cx.className = "ghost"; cx.textContent = "취소";
+        cx.type = "button"; cx.className = "ibtn sm"; cx.setAttribute("aria-label", "취소");
+        cx.appendChild(icSvg("i-x", "ic xs"));
         var wrap = document.createElement("div");
         wrap.className = "mgrActs";
         wrap.appendChild(sv); wrap.appendChild(cx);
@@ -2384,8 +2628,12 @@
     opts.forEach(function (o) {
       var b = document.createElement("button");
       b.type = "button";
-      b.className = "ghost moveOpt" + (o.id === cur ? " on" : "");
-      b.textContent = (o.id === cur ? "✓ " : "") + o.name;
+      b.className = "moveOpt" + (o.id === cur ? " on" : "");
+      b.appendChild(icSvg(o.id ? "i-folder" : "i-inbox", "ic s"));
+      var sp = document.createElement("span");
+      sp.textContent = o.name;
+      b.appendChild(sp);
+      if (o.id === cur) b.appendChild(icSvg("i-check", "ic s tick"));
       b.addEventListener("click", function () {
         closeMoveSheet();
         moveFacilityTo(id, o.id || null);
@@ -2506,31 +2754,31 @@
       els.gpsAcc.textContent = "";
       els.gpsMsg.textContent = g.err;
       els.gpsMsg.classList.add("err");
-      els.gpsBtn.textContent = "다시 시도";
+      setLabel(els.gpsBtn, "다시 시도");
       els.gpsCoord.textContent = "";
     } else if (g.active && g.lat !== null) {
       var age = Math.max(0, Math.round((Date.now() - g.at) / 1000));
-      els.gpsTitle.textContent = "현재 위치 확인됨";
-      els.gpsAcc.textContent = "정확도 ±" + Math.round(g.acc || 0) + " m";
+      els.gpsTitle.textContent = "위치 확인됨";
+      els.gpsAcc.textContent = "±" + Math.round(g.acc || 0) + " m";
       els.gpsMsg.classList.remove("err");
       els.gpsMsg.textContent = (g.acc && g.acc > 30)
-        ? "정확도가 낮습니다(±" + Math.round(g.acc) + " m). 하늘이 트인 곳에서 잠시 기다리면 좋아집니다."
-        : "이동하면 거리와 방향이 계속 갱신됩니다.";
-      els.gpsBtn.textContent = "위치 끄기";
+        ? "정확도가 낮습니다. 하늘이 트인 곳에서 잠시 기다려 보세요."
+        : "이동하면 거리·방향이 갱신됩니다.";
+      setLabel(els.gpsBtn, "위치 끄기");
       els.gpsCoord.textContent = fmt(g.lat, 7) + ", " + fmt(g.lon, 7) + " · " + age + "초 전";
     } else if (g.active) {
       els.gpsTitle.textContent = "위치 확인 중…";
       els.gpsAcc.textContent = "";
       els.gpsMsg.classList.remove("err");
-      els.gpsMsg.textContent = "GPS 신호를 기다리고 있습니다. 잠시만요.";
-      els.gpsBtn.textContent = "취소";
+      els.gpsMsg.textContent = "GPS 신호를 기다리는 중…";
+      setLabel(els.gpsBtn, "취소");
       els.gpsCoord.textContent = "";
     } else {
-      els.gpsTitle.textContent = "현재 위치 꺼짐";
+      els.gpsTitle.textContent = "위치 꺼짐";
       els.gpsAcc.textContent = "";
       els.gpsMsg.classList.remove("err");
-      els.gpsMsg.textContent = "위치를 켜면 서 있는 자리에서 선택한 시설까지의 거리와 방향을 보여 줍니다.";
-      els.gpsBtn.textContent = "현재 위치 켜기";
+      els.gpsMsg.textContent = "위치를 켜면 거리·방향이 표시됩니다.";
+      setLabel(els.gpsBtn, "위치 켜기");
       els.gpsCoord.textContent = "";
     }
 
@@ -2560,8 +2808,8 @@
       els.distMain.textContent = "거리 확인 전";
       els.distDir.textContent = "";
       els.distSub.textContent = g.err
-        ? "위치를 켤 수 없습니다. 위의 길찾기 버튼으로 지도 앱에서 확인하세요."
-        : "지금은 위치가 꺼져 있습니다. 위에서 [현재 위치 켜기]를 눌러 주세요.";
+        ? "위치를 못 켰습니다. 길찾기로 지도 앱에서 확인하세요."
+        : "위치를 켜면 거리·방향이 표시됩니다.";
     }
   }
 
@@ -2594,7 +2842,7 @@
       app: "grs80-facility-viewer", version: 2, exportedAt: new Date().toISOString(),
       folders: foldersNow(), facilities: list
     };
-    var ok = downloadFile("초기우수시설_" + stamp() + ".json", JSON.stringify(payload, null, 2), "application/json");
+    var ok = downloadFile("시설물_위치목록_" + stamp() + ".json", JSON.stringify(payload, null, 2), "application/json");
     toast(ok ? "백업 파일을 저장했습니다." : "파일 저장이 막혔습니다. 브라우저에서 다운로드를 허용해 주세요.");
   }
 
@@ -2606,7 +2854,7 @@
   function exportCsv() {
     var list = loadFacilities();
     if (!list.length) { toast("저장한 시설이 없습니다."); return; }
-    var head = ["시설명", "폴더", "현장메모", "좌표계", "동거E", "북거N", "표고Z", "위도", "경도", "등록일시", "사진"];
+    var head = ["시설물명", "폴더", "현장메모", "좌표계", "동거E", "북거N", "표고Z", "위도", "경도", "등록일시", "사진"];
     var rows = [head.join(",")];
     list.forEach(function (f) {
       rows.push([
@@ -2619,7 +2867,7 @@
         photosOf(f).length ? photosOf(f).length + "장" : ""
       ].join(","));
     });
-    var ok = downloadFile("초기우수시설_" + stamp() + ".csv", "\uFEFF" + rows.join("\r\n"), "text/csv");
+    var ok = downloadFile("시설물_위치목록_" + stamp() + ".csv", "\uFEFF" + rows.join("\r\n"), "text/csv");
     toast(ok ? "CSV 파일을 저장했습니다. 엑셀에서 열 수 있습니다." : "파일 저장이 막혔습니다.");
   }
 
@@ -2703,11 +2951,11 @@
       /* 예전 형식(폴더 열 없음) 기본 순서 */
       var idx = { name: 0, folder: -1, memo: 1, code: 2, E: 3, N: 4, z: 5, lat: 6, lon: 7, createdAt: 8 };
       var start = 0;
-      if (/시설명|name|폴더|folder/i.test(rows[0].join(","))) {
+      if (/시설물명|시설명|name|폴더|folder/i.test(rows[0].join(","))) {
         start = 1;
         idx = { name: -1, folder: -1, memo: -1, code: -1, E: -1, N: -1, z: -1, lat: -1, lon: -1, createdAt: -1 };
         var alias = {
-          "시설명": "name", "name": "name", "시설": "name",
+          "시설물명": "name", "시설명": "name", "name": "name", "시설물": "name", "시설": "name",
           "폴더": "folder", "folder": "folder",
           "현장메모": "memo", "메모": "memo", "memo": "memo",
           "좌표계": "code", "code": "code",
@@ -2979,16 +3227,9 @@
       toast("모두 지웠습니다.");
     });
 
-    $("shareNativeBtn").addEventListener("click", function () { if (state.current) nativeShare(state.current); });
-    $("shareTextBtn").addEventListener("click", function () { if (state.current) copyShareText(state.current); });
-    $("copyKakaoBtn").addEventListener("click", function () { if (state.current) copyKakao(state.current); });
-    $("copyNaverBtn").addEventListener("click", function () { if (state.current) copyNaver(state.current); });
-    $("copyPageBtn").addEventListener("click", function () { if (state.current) copyPageLink(state.current); });
-    if (!navigator.share) {
-      $("shareNativeBtn").classList.add("hidden");
-      $("shareTextBtn").classList.add("wide");
-    }
-    if (!/^https?:$/.test(location.protocol)) $("copyPageBtn").classList.add("hidden");
+    /* 공유는 시트 하나로 모았다 — 카드의 [공유] 버튼이 시트를 연다 */
+    if (!navigator.share) $("sheetShare").classList.add("hidden");
+    if (!/^https?:$/.test(location.protocol)) $("sheetPage").classList.add("hidden");
 
     $("sheetClose").addEventListener("click", closeSheet);
     $("sheetBackdrop").addEventListener("click", closeSheet);
@@ -3000,7 +3241,7 @@
     document.addEventListener("keydown", function (ev) {
       if (ev.key !== "Escape") return;
       if ($("lbWrap") && !$("lbWrap").classList.contains("hidden")) { closeLightbox(); return; }
-      closeSheet(); closeFolderSheet(); closeMoveSheet();
+      closeSheet(); closeFolderSheet(); closeMoveSheet(); closeHelp();
     });
 
     /* ---------- 사진 ---------- */
@@ -3019,6 +3260,17 @@
         });
       });
     }
+    $("helpBtn").addEventListener("click", openHelp);
+    $("helpBtn2").addEventListener("click", openHelp);
+    $("helpClose").addEventListener("click", closeHelp);
+    $("helpBackdrop").addEventListener("click", closeHelp);
+    $("shareOpenBtn").addEventListener("click", function () { if (state.current) openSheet(state.current); });
+    $("regionToggle").addEventListener("click", function () {
+      var box = $("regionBox");
+      box.open = !box.open;
+      this.setAttribute("aria-expanded", box.open ? "true" : "false");
+    });
+
     $("lbClose").addEventListener("click", closeLightbox);
     $("lbPrev").addEventListener("click", function () { stepLightbox(-1); });
     $("lbNext").addEventListener("click", function () { stepLightbox(1); });
@@ -3118,7 +3370,7 @@
     if (app) app.classList.add("hidden");
     var ls = $("lockScreen");
     if (ls) ls.classList.remove("hidden");
-    try { document.title = "링크로 열어 주세요 · 현장조사 및 비점오염저감시설 위치 관리"; } catch (e) {}
+    try { document.title = "링크로 열어 주세요 · 현장조사 및 시설물 위치 관리"; } catch (e) {}
   }
 
   if (!hostAllowed()) {
